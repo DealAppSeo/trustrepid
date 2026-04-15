@@ -28,6 +28,12 @@ export default async function HomePage() {
           <a href="/leaderboard" className="text-gray-400 hover:text-gray-100 transition-colors">
             Leaderboard
           </a>
+          <a href="/bounties" className="text-gray-400 hover:text-gray-100 transition-colors">
+            Bounties
+          </a>
+          <a href="/ethics" className="text-gray-400 hover:text-gray-100 transition-colors">
+            Ethics
+          </a>
           <a href="/install" className="bg-amber-500 hover:bg-amber-400 text-gray-950
             px-4 py-2 rounded font-mono text-sm font-medium transition-colors">
             Install SDK →

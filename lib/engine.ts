@@ -97,6 +97,38 @@ export async function getZKPDisclosure(
   } catch { return null; }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getAgentBadges(id: string): Promise<any[]> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/agents/${id}/badges`, { cache: 'no-store' });
+    return res.ok ? res.json() : [];
+  } catch { return []; }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getAgentEthics(id: string): Promise<any> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/agents/${id}/ethics`, { cache: 'no-store' });
+    return res.ok ? res.json() : null;
+  } catch { return null; }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getBounties(): Promise<any[]> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/bounties`, { next: { revalidate: 60 } });
+    return res.ok ? res.json() : [];
+  } catch { return []; }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getBounty(id: string): Promise<any> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/bounties/${id}`, { cache: 'no-store' });
+    return res.ok ? res.json() : null;
+  } catch { return null; }
+}
+
 export function formatRepId(repId: number): string {
   return repId.toLocaleString();
 }
