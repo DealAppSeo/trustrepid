@@ -29,6 +29,9 @@ export default async function HomePage() {
           <a href="/demo" className="text-gray-400 hover:text-gray-100 transition-colors">
             Demo
           </a>
+          <a href="/use-cases" className="text-gray-400 hover:text-gray-100 transition-colors">
+            Use Cases
+          </a>
           <a href="/leaderboard" className="text-gray-400 hover:text-gray-100 transition-colors">
             Leaderboard
           </a>

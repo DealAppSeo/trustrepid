@@ -29,28 +29,10 @@ export default function ActivityFeed() {
 
   const loadEvents = async () => {
     try {
-      const res = await fetch(`${ENGINE}/agents?limit=20`);
+      const res = await fetch(`${ENGINE}/events/recent?limit=12`);
       if (!res.ok) return;
-      const agents = await res.json();
-
-      const allEvents: Event[] = [];
-      for (const agent of agents.slice(0, 6)) {
-        const evRes = await fetch(`${ENGINE}/agents/${agent.id}/history`);
-        if (evRes.ok) {
-          const history = await evRes.json();
-          const recent = history.slice(0, 3).map((e: Event) => ({
-            ...e,
-            agentName: agent.agent_name,
-            isHuman: agent.isHuman || agent.agent_name === 'HUMAN',
-          }));
-          allEvents.push(...recent);
-        }
-      }
-
-      allEvents.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      setEvents(allEvents.slice(0, 10));
+      const data = await res.json();
+      setEvents(data);
     } catch {
       // ignore
     } finally {
