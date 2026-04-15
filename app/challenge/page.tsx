@@ -70,12 +70,16 @@ export default function ChallengePage() {
       .catch(() => {});
 
     if (typeof window !== 'undefined') {
-      // Pre-fill challenger ID from URL or localStorage
+      // Priority 1: URL param (deep link from repid.dev)
+      // Priority 2: localStorage (prior session)
       const url = new URL(window.location.href);
       const qId = url.searchParams.get('challengerId');
       const saved = localStorage.getItem('repid_agent_id');
-      if (qId) setChallengerId(qId);
-      else if (saved) setChallengerId(saved);
+      const idToUse = qId || saved || '';
+      if (idToUse) {
+        setChallengerId(idToUse);
+        localStorage.setItem('repid_agent_id', idToUse);
+      }
     }
   }, []);
 
@@ -155,6 +159,23 @@ export default function ChallengePage() {
             HashKey Testnet · Chain 133 · Contract 0xE3b5...1B69
           </p>
         </div>
+
+        {!challengerId && (
+          <div className="bg-blue-900/20 border border-blue-700/50 rounded-xl p-4 mb-4">
+            <p className="text-blue-400 text-xs font-mono mb-2">NO CHALLENGER ID DETECTED</p>
+            <p className="text-gray-400 text-sm mb-3">
+              Register your anonymous DBT first to get your Agent ID. It only takes 10 seconds —
+              no email, no wallet required.
+            </p>
+            <a
+              href="https://repid.vercel.app/join"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-white text-gray-950 px-4 py-2 rounded-lg font-mono text-sm font-bold hover:bg-gray-100">
+              Get your free DBT at repid.dev →
+            </a>
+          </div>
+        )}
 
         {/* Quick start for judges */}
         <div className="bg-amber-900/20 border border-amber-700/50 rounded-xl p-4 mb-6">
