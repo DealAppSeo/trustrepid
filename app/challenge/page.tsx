@@ -140,6 +140,9 @@ export default function ChallengePage() {
           <a href="/hal" className="text-gray-400 hover:text-gray-200 font-mono">
             HAL
           </a>
+          <a href="/research" className="text-gray-400 hover:text-gray-200 font-mono">
+            Research
+          </a>
           <a href="/demo" className="text-gray-400 hover:text-gray-200 font-mono">
             Demo Scenarios
           </a>

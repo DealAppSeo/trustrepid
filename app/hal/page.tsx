@@ -1,3 +1,5 @@
+import LiveStatsBanner from './LiveStatsBanner';
+
 export const metadata = {
   title: 'HAL — Hallucination Assurance Layer | TrustRepID',
   description:
@@ -109,6 +111,7 @@ export default function HalPage() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 pt-10 pb-24">
+        <LiveStatsBanner />
         <div className="mb-10">
           <p className="text-amber-400 font-mono text-xs uppercase tracking-widest mb-3">Layer 01 — Trust</p>
           <h1 className="text-4xl font-bold mb-3">HAL</h1>
