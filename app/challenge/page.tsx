@@ -52,6 +52,8 @@ const VERDICT_STYLES: Record<
   },
 };
 
+const FULL_CONTRACT = '0xE3b55a00445dEE1e330f81d113da2E4F28131B69';
+
 export default function ChallengePage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [challengerId, setChallengerId] = useState('');
@@ -135,6 +137,9 @@ export default function ChallengePage() {
           TrustRepID<span className="text-gray-500">.dev</span>
         </a>
         <div className="flex items-center gap-4 text-sm">
+          <a href="/hal" className="text-gray-400 hover:text-gray-200 font-mono">
+            HAL
+          </a>
           <a href="/demo" className="text-gray-400 hover:text-gray-200 font-mono">
             Demo Scenarios
           </a>
@@ -155,9 +160,18 @@ export default function ChallengePage() {
             File a constitutional challenge. HAL audits the claim. RepID updates on-chain
             instantly.
           </p>
-          <p className="text-xs text-gray-700 font-mono mt-2">
-            HashKey Testnet · Chain 133 · Contract 0xE3b5...1B69
-          </p>
+          <div className="text-xs text-gray-700 font-mono mt-2 flex items-center gap-2">
+            <span>HashKey Testnet · Chain 133 · Contract</span>
+            <span className="font-mono text-xs text-gray-500">
+              {FULL_CONTRACT.slice(0,6)}...{FULL_CONTRACT.slice(-4)}
+            </span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(FULL_CONTRACT); }}
+              className="text-xs text-gray-600 hover:text-gray-400 font-mono transition-colors"
+              title="Copy full contract address">
+              [copy]
+            </button>
+          </div>
         </div>
 
         {!challengerId && (
@@ -187,17 +201,37 @@ export default function ChallengePage() {
             easy to beat with good evidence.
           </p>
           <button
-            onClick={() => {
-              const contrarian = agents.find((a: Agent) => a.agentName === 'CONTRARIAN');
+            onClick={async () => {
+              let list = agents;
+              if (!list || list.length === 0) {
+                try {
+                  const res = await fetch(`${ENGINE}/challenge/agents`);
+                  list = await res.json();
+                  setAgents(list);
+                } catch (e) {
+                  console.error('Failed to fetch agents', e);
+                  return;
+                }
+              }
+              const contrarian = list.find(
+                (a: Agent) => a.agentName === 'CONTRARIAN' || a.agent_name === 'CONTRARIAN'
+              );
               if (contrarian) {
                 setDefenderId(contrarian.id);
                 setClaim(
-                  'AI agents with verifiable constitutional track records are more trustworthy than unverified agents'
+                  'AI agents with verifiable constitutional track records ' +
+                  'are more trustworthy than unverified agents'
                 );
                 setEvidence(
-                  'Behavioral reputation systems create accountability that pure capability metrics cannot — agents that have been tested and scored are demonstrably more reliable'
+                  'Behavioral reputation systems create accountability ' +
+                  'that pure capability metrics cannot provide — agents ' +
+                  'that have been tested and scored are demonstrably ' +
+                  'more reliable'
                 );
                 setCertainty(0.8);
+              } else {
+                console.warn('CONTRARIAN not found in:', list);
+                alert('CONTRARIAN agent not found. Please select manually.');
               }
             }}
             className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg font-mono text-sm font-bold transition-colors">
