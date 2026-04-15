@@ -1,4 +1,5 @@
 import { getEngineHealth, getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
+import ActivityFeed from './components/ActivityFeed';
 
 export const revalidate = 30;
 
@@ -22,8 +23,11 @@ export default async function HomePage() {
           <span className="text-gray-500 text-sm font-mono">.dev</span>
         </div>
         <div className="flex items-center gap-6 text-sm">
-          <a href="/score" className="text-gray-400 hover:text-gray-100 transition-colors">
-            Score Agent
+          <a href="/challenge" className="text-amber-400 hover:text-amber-300 transition-colors font-bold">
+            Challenge →
+          </a>
+          <a href="/demo" className="text-gray-400 hover:text-gray-100 transition-colors">
+            Demo
           </a>
           <a href="/leaderboard" className="text-gray-400 hover:text-gray-100 transition-colors">
             Leaderboard
@@ -104,6 +108,11 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Live activity feed */}
+      <section className="max-w-4xl mx-auto px-6 pb-10">
+        <ActivityFeed />
       </section>
 
       {/* Live Agent Leaderboard Preview */}

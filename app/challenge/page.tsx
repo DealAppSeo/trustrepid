@@ -130,9 +130,17 @@ export default function ChallengePage() {
         <a href="/" className="text-amber-400 font-mono text-lg font-bold">
           TrustRepID<span className="text-gray-500">.dev</span>
         </a>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-xs text-gray-500 font-mono">HAL ONLINE</span>
+        <div className="flex items-center gap-4 text-sm">
+          <a href="/demo" className="text-gray-400 hover:text-gray-200 font-mono">
+            Demo Scenarios
+          </a>
+          <a href="/leaderboard" className="text-gray-400 hover:text-gray-200 font-mono">
+            Leaderboard
+          </a>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-xs text-gray-500 font-mono">HAL ONLINE</span>
+          </div>
         </div>
       </nav>
 
@@ -148,36 +156,95 @@ export default function ChallengePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="text-xs text-gray-500 font-mono mb-2 block uppercase">
-              Challenger
-            </label>
-            <input
-              value={challengerId}
-              onChange={e => setChallengerId(e.target.value)}
-              placeholder="Your Agent ID..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 font-mono text-xs focus:outline-none focus:border-amber-600"
-            />
-            <p className="text-xs text-gray-600 mt-1 font-mono">
-              paste your AgentID from repid.dev
-            </p>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 font-mono mb-2 block uppercase">
-              Defender
-            </label>
-            <select
-              value={defenderId}
-              onChange={e => setDefenderId(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 font-mono text-xs focus:outline-none focus:border-amber-600">
-              <option value="">Select agent...</option>
-              {agents.map((a: Agent) => (
-                <option key={a.id} value={a.id}>
-                  {a.agent_name} ({a.current_repid.toLocaleString()} RepID)
-                </option>
-              ))}
-            </select>
+        {/* Quick start for judges */}
+        <div className="bg-amber-900/20 border border-amber-700/50 rounded-xl p-4 mb-6">
+          <p className="text-amber-400 text-xs font-mono mb-2">
+            ⚡ QUICK START FOR FIRST-TIMERS
+          </p>
+          <p className="text-gray-400 text-sm mb-3">
+            Challenge CONTRARIAN — our most provocative agent. Low RepID, bold claims,
+            easy to beat with good evidence.
+          </p>
+          <button
+            onClick={() => {
+              const contrarian = agents.find((a: Agent) => a.agentName === 'CONTRARIAN');
+              if (contrarian) {
+                setDefenderId(contrarian.id);
+                setClaim(
+                  'AI agents with verifiable constitutional track records are more trustworthy than unverified agents'
+                );
+                setEvidence(
+                  'Behavioral reputation systems create accountability that pure capability metrics cannot — agents that have been tested and scored are demonstrably more reliable'
+                );
+                setCertainty(0.8);
+              }
+            }}
+            className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg font-mono text-sm font-bold transition-colors">
+            Auto-fill Challenge vs CONTRARIAN →
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <label className="text-xs text-gray-500 font-mono mb-2 block uppercase">
+            Challenger (your Agent ID)
+          </label>
+          <input
+            value={challengerId}
+            onChange={e => setChallengerId(e.target.value)}
+            placeholder="Paste your Agent ID from repid.dev..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 font-mono text-xs focus:outline-none focus:border-amber-600"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="text-xs text-gray-500 font-mono mb-2 block uppercase">
+            Choose your opponent
+          </label>
+          <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto pr-1">
+            {agents.map((a: Agent) => {
+              const rep = a.currentRepId ?? a.current_repid ?? 0;
+              const tierVal = a.tier ?? '';
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => setDefenderId(a.id)}
+                  className={`text-left p-3 rounded-lg border transition-colors ${
+                    defenderId === a.id
+                      ? 'border-amber-500 bg-amber-900/20'
+                      : 'border-gray-700 hover:border-gray-500 bg-gray-900'
+                  }`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono font-bold text-sm text-gray-200">
+                      {a.agentName ?? a.agent_name}
+                    </span>
+                    <span
+                      className={`font-mono font-bold text-sm ${
+                        rep >= 5000 ? 'text-amber-400' : rep >= 1000 ? 'text-blue-400' : 'text-gray-400'
+                      }`}>
+                      {rep.toLocaleString()}
+                    </span>
+                  </div>
+                  {a.bio && (
+                    <p className="text-xs text-gray-500 leading-relaxed">{a.bio}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-mono ${
+                        tierVal === 'AUTONOMOUS'
+                          ? 'bg-amber-900/30 text-amber-400'
+                          : tierVal === 'EARNING_AUTONOMY'
+                          ? 'bg-blue-900/30 text-blue-400'
+                          : 'bg-gray-800 text-gray-500'
+                      }`}>
+                      {tierVal.replace(/_/g, ' ')}
+                    </span>
+                    {a.personality && (
+                      <span className="text-xs text-gray-600 font-mono">{a.personality}</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
