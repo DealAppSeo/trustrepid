@@ -1,6 +1,7 @@
 import { getAgents, formatRepId } from '@/lib/engine';
 
 export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 export default async function PacificaPage() {
   const agents = await getAgents(4);

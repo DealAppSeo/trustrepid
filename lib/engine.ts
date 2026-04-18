@@ -1,4 +1,4 @@
-const ENGINE_URL = process.env.NEXT_PUBLIC_REPID_ENGINE_URL || '';
+const ENGINE_URL = process.env.NEXT_PUBLIC_REPID_ENGINE_URL || 'https://repid-engine-production.up.railway.app';
 
 export interface Agent {
   id: string;
@@ -62,11 +62,10 @@ export async function getEngineHealth(): Promise<EngineHealth | null> {
 }
 
 export async function getAgents(limit = 20): Promise<Agent[]> {
-  try {
-    const res = await fetch(`${ENGINE_URL}/agents?limit=${limit}`,
-      { next: { revalidate: 10 } });
-    return res.ok ? res.json() : [];
-  } catch { return []; }
+  const res = await fetch(`${ENGINE_URL}/agents?limit=${limit}`,
+    { next: { revalidate: 10 } });
+  if (!res.ok) throw new Error(`getAgents failed: ${res.status}`);
+  return res.json();
 }
 
 export async function getAgent(id: string): Promise<Agent | null> {

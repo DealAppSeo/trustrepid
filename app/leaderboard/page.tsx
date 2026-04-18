@@ -3,7 +3,7 @@ import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
 export const revalidate = 30;
 
 export default async function LeaderboardPage() {
-  const agents = await getAgents(20);
+  const agents = await getAgents(20).catch(() => null);
 
   return (
     <main className="min-h-screen bg-gray-950 text-gray-100">
@@ -38,9 +38,13 @@ export default async function LeaderboardPage() {
             <span>RepID</span>
             <span>Tier</span>
           </div>
-          {agents.length === 0 ? (
+          {agents === null ? (
             <div className="px-4 py-12 text-center text-gray-600 font-mono text-sm">
               Engine offline
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="px-4 py-12 text-center text-gray-600 font-mono text-sm">
+              No agents registered yet
             </div>
           ) : (
             agents.map((agent, i) => {

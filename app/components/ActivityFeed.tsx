@@ -25,16 +25,21 @@ const EVENT_LABELS: Record<string, { label: string; color: string; icon: string 
 
 export default function ActivityFeed() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadEvents = async () => {
     try {
       const res = await fetch(`${ENGINE}/events/recent?limit=12`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setError(true);
+        return;
+      }
       const data = await res.json();
+      setError(false);
       setEvents(data);
     } catch {
-      // ignore
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -67,7 +72,11 @@ export default function ActivityFeed() {
           <span className="text-xs text-gray-600 font-mono">live</span>
         </span>
       </div>
-      {events.length === 0 ? (
+      {error && events.length === 0 ? (
+        <div className="px-4 py-6 text-center text-gray-600 text-xs font-mono">
+          Engine offline — check back shortly
+        </div>
+      ) : events.length === 0 ? (
         <div className="px-4 py-6 text-center text-gray-600 text-xs font-mono">
           No activity yet — be the first to challenge an agent
         </div>

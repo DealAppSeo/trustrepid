@@ -6,7 +6,7 @@ export const revalidate = 30;
 export default async function HomePage() {
   const [health, agents] = await Promise.all([
     getEngineHealth(),
-    getAgents(4),
+    getAgents(4).catch(() => null),
   ]);
 
   const totalDecisions = 1712; // from live prod — update dynamically in Sprint 3
@@ -97,7 +97,7 @@ export default async function HomePage() {
       <section className="max-w-4xl mx-auto px-6 pb-16">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Agents Scored', value: agents.length > 0 ? agents.length.toString() : '—' },
+            { label: 'Agents Scored', value: agents && agents.length > 0 ? agents.length.toString() : '—' },
             { label: 'Total Decisions', value: health ? totalDecisions.toLocaleString() : '—' },
             { label: 'ZK Proofs', value: health ? zkpProofs.toLocaleString() : '—' },
             { label: 'Engine Status', value: health?.supabaseConnected ? 'LIVE' : 'OFFLINE' },
@@ -143,9 +143,13 @@ export default async function HomePage() {
             <span>Tier</span>
             <span>Activity</span>
           </div>
-          {agents.length === 0 ? (
+          {agents === null ? (
             <div className="px-4 py-8 text-center text-gray-600 font-mono text-sm">
               Engine offline — check back shortly
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="px-4 py-8 text-center text-gray-600 font-mono text-sm">
+              No agents registered yet
             </div>
           ) : (
             agents.map((agent, i) => {
