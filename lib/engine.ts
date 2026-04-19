@@ -62,6 +62,21 @@ export async function getEngineHealth(): Promise<EngineHealth | null> {
 }
 
 export async function getAgents(limit = 20): Promise<Agent[]> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (supabaseUrl && anonKey) {
+    const res = await fetch(`${supabaseUrl}/rest/v1/repid_agents?current_repid=gt.0&order=current_repid.desc&select=id,agent_name,current_repid,tier,activity_30d,last_updated,erc8004_address&limit=${limit}`, {
+      headers: {
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`
+      },
+      next: { revalidate: 10 }
+    });
+    if (!res.ok) throw new Error(`getAgents Supabase failed: ${res.status}`);
+    return res.json();
+  }
+
   const res = await fetch(`${ENGINE_URL}/agents?limit=${limit}`,
     { next: { revalidate: 10 } });
   if (!res.ok) throw new Error(`getAgents failed: ${res.status}`);
