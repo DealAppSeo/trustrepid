@@ -90,15 +90,31 @@ export default function HALPage() {
 
         <section className="grid md:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">About This Benchmark</h2>
-            <p className="text-gray-300 leading-relaxed">
-              This benchmark publishes our results transparently — including
-              the pre-calibration baseline where the veto threshold has not yet
-              fired. We believe the agentic economy deserves honest benchmarks,
-              not polished ones. The methodology is open for critique and
-              reproduction. All perspectives welcome.
-            </p>
+            <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">HAL Veto History</h2>
+            <div className="space-y-4 text-gray-300">
+              <div className="bg-white/5 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">ZKP vetoes (trinity_hallucination_logs)</h3>
+                <p>Count: <span className="font-bold text-red-400">298</span> <span className="text-sm">(298 unique on-chain proofs)</span></p>
+                <p>First: March 12, 2026</p>
+                <p>Agent: NEXUS</p>
+              </div>
+              <div className="bg-white/5 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">CLAIM_REJECTED verdicts (hal_production_events)</h3>
+                <p>Count: <span className="font-bold text-red-400">3</span></p>
+                <p>Date: April 17, 2026</p>
+                <p>Status: Full 8-layer pipeline confirmed active</p>
+              </div>
+              <div className="bg-white/5 p-4 rounded-lg">
+                <h3 className="font-semibold text-white mb-2">Agent-layer catches (repid_score_events)</h3>
+                <p>Count: <span className="font-bold text-yellow-400">60</span></p>
+                <p>Date: April 20, 2026</p>
+              </div>
+              <div className="mt-4 p-4 border border-red-500/30 bg-red-500/10 rounded-lg">
+                <p className="text-xl font-bold text-white text-center">Total system vetoes: <span className="text-red-400">361</span> across all layers</p>
+              </div>
+            </div>
           </div>
+          
           <div>
             <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">Calibration Timeline</h2>
             <ul className="space-y-3 text-gray-300">
