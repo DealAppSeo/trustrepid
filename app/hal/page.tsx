@@ -90,6 +90,29 @@ export default function HALPage() {
 
         <section className="grid md:grid-cols-2 gap-8">
           <div>
+            <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">About This Benchmark</h2>
+            <p className="text-gray-300 leading-relaxed">
+              This benchmark publishes our results transparently — including
+              the pre-calibration baseline where the veto threshold has not yet
+              fired. We believe the agentic economy deserves honest benchmarks,
+              not polished ones. The methodology is open for critique and
+              reproduction. All perspectives welcome.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">Calibration Timeline</h2>
+            <ul className="space-y-3 text-gray-300">
+              <li className="flex justify-between items-center"><span className="flex items-center gap-2"><span className="text-green-400">✅</span> Phase 1: Baseline established</span> <span className="text-sm font-mono text-gray-400">April 21, 2026</span></li>
+              <li className="flex justify-between items-center"><span className="flex items-center gap-2"><span className="text-blue-400">🔄</span> Phase 2: 5-signal extractor deployed</span> <span className="text-sm font-mono text-gray-400">In progress</span></li>
+              <li className="flex justify-between items-center"><span className="flex items-center gap-2"><span className="text-amber-400">⏳</span> Phase 3: LASSO calibration (100+ events)</span> <span className="text-sm font-mono text-gray-400">~7-10 days</span></li>
+              <li className="flex justify-between items-center"><span className="flex items-center gap-2"><span className="text-amber-400">⏳</span> Phase 4: First real HAL veto in production</span> <span className="text-sm font-mono text-gray-400">~14 days</span></li>
+              <li className="flex justify-between items-center"><span className="flex items-center gap-2"><span className="text-amber-400">⏳</span> Phase 5: TruthfulQA post-calibration</span> <span className="text-sm font-mono text-gray-400">~30 days</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="grid md:grid-cols-2 gap-8">
+          <div>
             <h2 className="text-2xl font-semibold border-b border-white/10 pb-2 mb-4">Test Suite Stats</h2>
             <ul className="space-y-3 text-gray-300">
               <li className="flex justify-between"><span>Total labeled prompts:</span> <span className="font-bold text-white">{prompts.total}</span></li>
