@@ -2,6 +2,8 @@ import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
 
 export const revalidate = 30;
 
+import LiveMetricsBar from '../components/LiveMetricsBar';
+
 export default async function LeaderboardPage() {
   const agents = await getAgents(20).catch(() => null);
 
@@ -14,6 +16,26 @@ export default async function LeaderboardPage() {
         <a href="/install" className="bg-amber-500 hover:bg-amber-400 text-gray-950
           px-4 py-2 rounded font-mono text-sm font-medium">Install SDK →</a>
       </nav>
+      
+      <LiveMetricsBar />
+
+      <div style={{display:'flex',gap:'12px',flexWrap:'wrap',
+        padding:'12px 24px',background:'#F8FAFC',
+        borderBottom:'1px solid #E2E8F0'}}>
+        {['EU AI Act Article 14 ✓',
+          'Colorado AI Act Ready ✓',
+          'BSA/AML/KYC via ZKP ✓',
+          'Patents Pending ✓',
+          'Apache 2.0 Licensed ✓',
+          'Bootstrapping Mode: Labeled ✓'
+        ].map(badge => (
+          <span key={badge} style={{background:'#EEF2FF',color:'#1B4FD8',
+            padding:'4px 10px',borderRadius:'4px',
+            fontSize:'11px',fontWeight:700}}>
+            {badge}
+          </span>
+        ))}
+      </div>
 
       <div className="max-w-3xl mx-auto px-6 pt-16 pb-24">
         <div className="flex items-center justify-between mb-8">

@@ -1,5 +1,6 @@
 import { getEngineHealth, getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
 import ActivityFeed from './components/ActivityFeed';
+import LiveMetricsBar from './components/LiveMetricsBar';
 
 export const revalidate = 30;
 
@@ -56,6 +57,26 @@ export default async function HomePage() {
           </a>
         </div>
       </nav>
+
+      <LiveMetricsBar />
+
+      <div style={{display:'flex',gap:'12px',flexWrap:'wrap',
+        padding:'12px 24px',background:'#F8FAFC',
+        borderBottom:'1px solid #E2E8F0'}}>
+        {['EU AI Act Article 14 ✓',
+          'Colorado AI Act Ready ✓',
+          'BSA/AML/KYC via ZKP ✓',
+          'Patents Pending ✓',
+          'Apache 2.0 Licensed ✓',
+          'Bootstrapping Mode: Labeled ✓'
+        ].map(badge => (
+          <span key={badge} style={{background:'#EEF2FF',color:'#1B4FD8',
+            padding:'4px 10px',borderRadius:'4px',
+            fontSize:'11px',fontWeight:700}}>
+            {badge}
+          </span>
+        ))}
+      </div>
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">

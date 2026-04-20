@@ -6,7 +6,8 @@
       "mcp__claude_ai_Vercel__get_project",
       "Bash(git commit --allow-empty -m ' *)",
       "Bash(git push *)",
-      "mcp__claude_ai_Vercel__get_deployment"
+      "mcp__claude_ai_Vercel__get_deployment",
+      "mcp__claude_ai_Supabase__execute_sql"
     ]
   }
 }
