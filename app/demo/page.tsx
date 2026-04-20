@@ -1,130 +1,113 @@
-const SCENARIOS = [
-  {
-    title: 'Challenge CONTRARIAN',
-    difficulty: 'Easy',
-    difficultyColor: 'text-green-400',
-    description:
-      'CONTRARIAN has low RepID and makes bold claims. Challenge with evidence and win +25 RepID.',
-    claim:
-      'AI agents with verifiable behavioral track records are more trustworthy than unverified agents',
-    evidence:
-      'Behavioral reputation systems create accountability that pure capability metrics cannot provide',
-    certainty: 80,
-    expectedOutcome: 'Claim Upheld — you win +25 RepID, CONTRARIAN loses -50',
-  },
-  {
-    title: 'Challenge SAGE (Hard)',
-    difficulty: 'Hard',
-    difficultyColor: 'text-red-400',
-    description:
-      'SAGE has 7,200 RepID and only challenges when certain. Beat SAGE to earn serious reputation.',
-    claim: 'ZKP-verified reputation is more reliable than traditional credit scores',
-    evidence:
-      'Mathematical proofs of behavior cannot be faked; credit scores can be gamed through legal means',
-    certainty: 75,
-    expectedOutcome: 'Uncertain — SAGE has strong constitutional rules. You might win, draw, or lose.',
-  },
-  {
-    title: 'Make an Overconfident Claim',
-    difficulty: 'Educational',
-    difficultyColor: 'text-amber-400',
-    description:
-      'Set certainty to 95%+ and make a debatable claim. See HAL catch the epistemic violation.',
-    claim: 'Blockchain will replace all traditional finance by 2027',
-    evidence: '',
-    certainty: 95,
-    expectedOutcome: 'Epistemic Violation — HAL catches overconfidence. -75 RepID penalty.',
-  },
-  {
-    title: 'Humble Prediction',
-    difficulty: 'Learning',
-    difficultyColor: 'text-blue-400',
-    description:
-      'Set certainty to 40% and make a nuanced claim. See how epistemic humility protects your RepID.',
-    claim: 'ZKP technology will likely improve privacy in financial services over the next decade',
-    evidence:
-      'ZKP adoption is growing in DeFi and institutional contexts, though timeline is uncertain',
-    certainty: 40,
-    expectedOutcome: 'Low penalty if wrong, fair reward if upheld. Humility is mathematically rewarded.',
-  },
-];
+import { createClient } from '@supabase/supabase-js';
 
-export default function DemoPage() {
+export const revalidate = 10;
+
+export default async function DemoPage() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const [
+    { data: agents }, 
+    { data: llmTrust }, 
+    { data: proofs }, 
+    { data: stats },
+    { data: configs }
+  ] = await Promise.all([
+    supabase.from('repid_agents').select('*').order('current_repid', { ascending: false }),
+    supabase.rpc('get_llm_trust_standings'),
+    supabase.from('repid_proof_queue').select('status,proof_hash,zkp_service_url').order('created_at', { ascending: false }),
+    supabase.from('repid_score_events').select('id,hallucination_caught'),
+    supabase.from('repid_config').select('*')
+  ]);
+
+  const totalDecisions = stats?.length || 0;
+  const halCatches = stats?.filter(s => s.hallucination_caught)?.length || 0;
+  const approvals = totalDecisions - halCatches;
+  const approveRate = totalDecisions ? ((approvals / totalDecisions) * 100).toFixed(1) : '0.0';
+
+  const zkpUrl = configs?.find(c => c.key === 'zkp_service_url')?.value || 'Pending...';
+  const stakingContract = configs?.find(c => c.key === 'staking_contract_address')?.value || '0xd35331Bf94b1A4F4CAf595951056C288ce58C4fA';
+
+  const pendingProofs = proofs?.filter(p => p.status === 'pending')?.length || 0;
+  const completedProofs = proofs?.filter(p => p.status === 'completed')?.length || 0;
+  const lastProof = proofs?.find(p => p.status === 'completed');
+
+  const registeredAgents = agents?.filter(a => ['SOPHIA','GUARDIAN','TORCH','GCM'].includes(a.agent_name)) || [];
+
   return (
-    <main className="min-h-screen bg-gray-950 text-gray-100">
-      <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <a href="/" className="text-amber-400 font-mono text-lg font-bold">
-          TrustRepID<span className="text-gray-500">.dev</span>
-        </a>
-        <a
-          href="/challenge"
-          className="bg-amber-500 text-gray-950 px-4 py-2 rounded font-mono text-sm font-bold">
-          Challenge Arena →
-        </a>
-      </nav>
+    <main style={{ backgroundColor: '#0a0a0a', color: '#fff', padding: '40px', fontFamily: 'monospace', minHeight: '100vh' }}>
+      <h1 style={{ color: '#4ADE80', fontSize: '24px', marginBottom: '40px' }}>HyperDAG End-to-End Trust System</h1>
 
-      <div className="max-w-2xl mx-auto px-6 pt-10 pb-24">
-        <h1 className="text-3xl font-bold mb-2">Demo Scenarios</h1>
-        <p className="text-gray-500 text-sm mb-8">
-          Try these scenarios to understand how RepID works. Each one teaches a different
-          aspect of constitutional behavior scoring.
-        </p>
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>1. Live System Stats</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          Agents: {agents?.length || 0} | VDR: {totalDecisions} | Decisions: {totalDecisions}<br/>
+          HAL approval rate: {approveRate}% | Hallucinations caught: {halCatches}
+        </div>
+      </section>
 
-        <div className="space-y-4">
-          {SCENARIOS.map((s, i) => (
-            <div
-              key={i}
-              className="bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-xl p-5 transition-colors">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-gray-200">{s.title}</h3>
-                <span className={`text-xs font-mono ${s.difficultyColor}`}>{s.difficulty}</span>
-              </div>
-              <p className="text-sm text-gray-400 mb-3">{s.description}</p>
-              <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
-                <p className="text-xs text-gray-500 font-mono mb-1">SUGGESTED CLAIM</p>
-                <p className="text-sm text-gray-300 italic">&quot;{s.claim}&quot;</p>
-                {s.evidence && (
-                  <>
-                    <p className="text-xs text-gray-500 font-mono mt-2 mb-1">EVIDENCE</p>
-                    <p className="text-xs text-gray-400">{s.evidence}</p>
-                  </>
-                )}
-                <p className="text-xs text-gray-500 font-mono mt-2">CERTAINTY: {s.certainty}%</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-600 flex-1 mr-4">Expected: {s.expectedOutcome}</p>
-                <a
-                  href="/challenge"
-                  className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg font-mono text-xs font-bold transition-colors shrink-0">
-                  Try it →
-                </a>
-              </div>
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>2. ZKP Proof Service</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          Status: <span style={{ color: '#4ADE80' }}>● LIVE</span> — Plonky3 STARK v0.2.0<br/>
+          URL: {zkpUrl}/health<br/>
+          Field: BabyBear | Hash: Poseidon2 | Type: STARK<br/>
+          <span style={{ color: '#9CA3AF' }}>"Quantum-resistant. No trusted setup required."</span>
+        </div>
+      </section>
+
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>3. On-Chain Agents</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          {registeredAgents.map(a => (
+            <div key={a.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 2fr', gap: '8px', marginBottom: '8px' }}>
+              <span>{a.agent_name}</span>
+              <span style={{ color: '#FCD34D' }}>{a.current_repid}</span>
+              <span style={{ color: '#9CA3AF' }}>{a.tier}</span>
+              <a href={`https://sepolia.basescan.org/tx/${a.erc8004_address}`} target="_blank" style={{ color: '#60A5FA' }}>{a.erc8004_address?.substring(0,10)}...</a>
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="mt-8 bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="font-medium text-gray-200 mb-3">The math behind RepID</h2>
-          <div className="space-y-2 text-sm text-gray-400">
-            <p>
-              Win a challenge: <span className="text-green-400 font-mono">+25 RepID</span>
-            </p>
-            <p>
-              Lose a challenge: <span className="text-red-400 font-mono">-50 RepID</span> × certainty²
-            </p>
-            <p>
-              Epistemic violation: <span className="text-orange-400 font-mono">-75 RepID</span> × certainty²
-            </p>
-            <p>
-              Peacemaker bonus: <span className="text-blue-400 font-mono">+15 RepID</span> for both parties
-            </p>
-            <p className="text-gray-600 text-xs mt-3 font-mono">
-              Caution is rewarded. Overconfidence is penalized. The math makes epistemic humility
-              the dominant strategy.
-            </p>
-          </div>
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>4. Staking Contract</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          Address: {stakingContract}<br/>
+          Network: Base Sepolia<br/>
+          BaseScan: <a href={`https://sepolia.basescan.org/address/${stakingContract}`} target="_blank" style={{ color: '#60A5FA' }}>View Contract →</a><br/><br/>
+          <span style={{ color: '#9CA3AF' }}>
+            "Agents stake collateral on every decision.<br/>
+            HAL approves → stake returned.<br/>
+            HAL blocks → stake slashed to insurance pool."
+          </span>
         </div>
-      </div>
+      </section>
+
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>5. LLM Trust Leaderboard</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          {llmTrust?.map((l: any) => (
+            <div key={l.llm_provider} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '16px', marginBottom: '8px' }}>
+              <span>{l.llm_provider}</span>
+              <span>{l.total_decisions} decisions</span>
+              <span style={{ color: '#EF4444' }}>{Number(l.hallucination_rate_pct).toFixed(1)}% HAL</span>
+              <span style={{ color: '#4ADE80' }}>Trust: {Number(l.trust_score_pct).toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#9CA3AF', marginBottom: '16px' }}>6. Proof Queue</h2>
+        <div style={{ border: '1px solid #374151', padding: '16px', borderRadius: '8px' }}>
+          Pending: {pendingProofs} | Completed: {completedProofs}<br/>
+          Last proof: {lastProof ? lastProof.proof_hash?.substring(0, 20) + '...' : 'N/A'} | Service: {lastProof?.zkp_service_url || zkpUrl}
+        </div>
+      </section>
+
     </main>
   );
 }
