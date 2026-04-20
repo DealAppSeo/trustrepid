@@ -41,6 +41,9 @@ export default async function HomePage() {
           <a href="/leaderboard" className="text-gray-400 hover:text-gray-100 transition-colors">
             Leaderboard
           </a>
+          <a href="/llm-trust" className="text-gray-400 hover:text-gray-100 transition-colors">
+            LLM Trust
+          </a>
           <a href="/bounties" className="text-gray-400 hover:text-gray-100 transition-colors">
             Bounties
           </a>
@@ -162,9 +165,17 @@ export default async function HomePage() {
                     <span className="text-gray-600 text-xs">{i + 1}</span>
                     {agent.agent_name}
                   </span>
-                  <span className="font-mono text-amber-400 font-bold">
-                    {formatRepId(agent.current_repid)}
-                  </span>
+                  <div className="flex flex-col justify-center">
+                    <span className="font-mono text-amber-400 font-bold">
+                      {formatRepId(agent.current_repid)}
+                    </span>
+                    <span 
+                      className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                      title="This count never decays. Every verified decision is a permanent record of earned experience."
+                    >
+                      Verified Decisions: {agent.vdr_count || '—'}
+                    </span>
+                  </div>
                   <span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5
                       rounded text-xs font-mono font-medium

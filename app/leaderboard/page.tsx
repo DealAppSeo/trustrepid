@@ -66,9 +66,17 @@ export default async function LeaderboardPage() {
                       {agent.erc8004_address.slice(0, 10)}...
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-amber-400">
-                    {formatRepId(agent.current_repid)}
-                  </span>
+                  <div className="flex flex-col justify-center">
+                    <span className="font-mono font-bold text-amber-400">
+                      {formatRepId(agent.current_repid)}
+                    </span>
+                    <span 
+                      className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                      title="This count never decays. Every verified decision is a permanent record of earned experience."
+                    >
+                      Verified: {agent.vdr_count || '—'}
+                    </span>
+                  </div>
                   <span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5
                       rounded text-xs font-mono border
@@ -82,10 +90,12 @@ export default async function LeaderboardPage() {
           )}
         </div>
 
-        <p className="text-center text-gray-700 text-xs font-mono mt-6">
-          RepID is earned through constitutional behavior —
-          not purchased, not transferable, not assignable.
-        </p>
+        <div className="mt-8 bg-gray-900 border border-gray-800 p-6 rounded-lg text-center max-w-xl mx-auto">
+          <h3 className="font-bold text-white mb-2 font-mono">What is a Verified Decision Record?</h3>
+          <p className="text-sm font-mono text-gray-400 leading-relaxed">
+            Every scored decision that completes the full cycle — scored, challenged if needed, resolved — adds 1 to this count permanently. Like flight hours for pilots. It only grows.
+          </p>
+        </div>
       </div>
     </main>
   );

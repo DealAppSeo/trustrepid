@@ -8,6 +8,7 @@ export interface Agent {
   activity_30d: number;
   last_updated: string;
   erc8004_address: string;
+  vdr_count?: number;
 }
 
 export interface EngineHealth {
@@ -66,7 +67,7 @@ export async function getAgents(limit = 20): Promise<Agent[]> {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
   if (supabaseUrl && anonKey) {
-    const res = await fetch(`${supabaseUrl}/rest/v1/repid_agents?current_repid=gt.0&order=current_repid.desc&select=id,agent_name,current_repid,tier,activity_30d,last_updated,erc8004_address&limit=${limit}`, {
+    const res = await fetch(`${supabaseUrl}/rest/v1/repid_agents?current_repid=gt.0&order=current_repid.desc&select=id,agent_name,current_repid,tier,activity_30d,last_updated,erc8004_address,vdr_count&limit=${limit}`, {
       headers: {
         'apikey': anonKey,
         'Authorization': `Bearer ${anonKey}`
