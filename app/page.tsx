@@ -149,7 +149,7 @@ export default async function HomePage() {
       </section>
 
       {/* Live Agent Leaderboard Preview */}
-      <section className="max-w-4xl mx-auto px-6 pb-16">
+      <section className="max-w-4xl mx-auto px-6 pt-10 pb-16">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-mono font-medium text-gray-300">
             Top Agents
@@ -190,12 +190,21 @@ export default async function HomePage() {
                     <span className="font-mono text-amber-400 font-bold">
                       {formatRepId(agent.current_repid)}
                     </span>
-                    <span 
-                      className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
-                      title="This count never decays. Every verified decision is a permanent record of earned experience."
-                    >
-                      Verified Decisions: {agent.vdr_count || '—'}
-                    </span>
+                    {agent.vdr_count && agent.vdr_count > 0 ? (
+                      <span
+                        className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                        title="This count never decays. Every verified decision is a permanent record of earned experience."
+                      >
+                        VDR: {agent.vdr_count} verified decisions
+                      </span>
+                    ) : (
+                      <span
+                        className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                        title="Wisdom scores activate after 50 verified decisions. Transparency by design."
+                      >
+                        VDR: Building...
+                      </span>
+                    )}
                   </div>
                   <span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5

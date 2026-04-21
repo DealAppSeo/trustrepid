@@ -1,8 +1,7 @@
 import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
+import LiveMetricsBar from '../components/LiveMetricsBar';
 
 export const revalidate = 30;
-
-import LiveMetricsBar from '../components/LiveMetricsBar';
 
 export default async function LeaderboardPage() {
   const agents = await getAgents(20).catch(() => null);
@@ -92,12 +91,21 @@ export default async function LeaderboardPage() {
                     <span className="font-mono font-bold text-amber-400">
                       {formatRepId(agent.current_repid)}
                     </span>
-                    <span 
-                      className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
-                      title="This count never decays. Every verified decision is a permanent record of earned experience."
-                    >
-                      Verified: {agent.vdr_count || '—'}
-                    </span>
+                    {agent.vdr_count && agent.vdr_count > 0 ? (
+                      <span
+                        className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                        title="This count never decays. Every verified decision is a permanent record of earned experience."
+                      >
+                        VDR: {agent.vdr_count} verified decisions
+                      </span>
+                    ) : (
+                      <span
+                        className="text-[10px] text-gray-500 font-mono mt-0.5 cursor-help"
+                        title="Wisdom scores activate after 50 verified decisions. Transparency by design."
+                      >
+                        VDR: Building...
+                      </span>
+                    )}
                   </div>
                   <span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5
