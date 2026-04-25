@@ -42,3 +42,9 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# Internal instruction / log files — do not commit to public repos
+CLAUDE.md
+AGENTS.md
+gmpd_log.md
+marco_dm.md
