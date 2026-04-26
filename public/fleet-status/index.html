@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HyperDAG Fleet — 12 agents, on-chain via ERC-8004</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Live status of the 12-agent HyperDAG fleet, registered to the ERC-8004 Identity Registry on Base Sepolia. Anyone can verify on-chain.">
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #121835;
+    --border: #243066;
+    --text: #e6ecff;
+    --muted: #8c97c4;
+    --accent: #6ee7b7;
+    --warn: #facc15;
+    --bad: #f87171;
+    --link: #93c5fd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 32px 24px 16px; border-bottom: 1px solid var(--border); }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); max-width: 720px; }
+  .topbar { display: flex; gap: 24px; flex-wrap: wrap; padding: 16px 24px; background: var(--panel); border-bottom: 1px solid var(--border); }
+  .topbar .stat { font-size: 13px; }
+  .topbar .stat strong { color: var(--text); font-size: 18px; display: block; }
+  .grid { display: grid; gap: 16px; padding: 24px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--link); }
+  .card .name { font-size: 18px; font-weight: 600; }
+  .card .role { color: var(--muted); font-size: 12px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; margin-left: 8px; }
+  .pill.ok { background: rgba(110, 231, 183, 0.15); color: var(--accent); }
+  .pill.warn { background: rgba(250, 204, 21, 0.15); color: var(--warn); }
+  .pill.bad { background: rgba(248, 113, 113, 0.15); color: var(--bad); }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-size: 13px; }
+  .row:last-child { border-bottom: 0; }
+  .row .k { color: var(--muted); }
+  .row .v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  footer { padding: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  pre { background: #0a0e23; border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow: auto; font-size: 12px; max-height: 400px; }
+  .errbar { background: rgba(248, 113, 113, 0.1); color: var(--bad); padding: 12px 24px; border-bottom: 1px solid var(--bad); }
+  #endpoint-input { font-family: ui-monospace, monospace; font-size: 12px; background: #0a0e23; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; min-width: 360px; }
+  details { background: rgba(255,255,255,0.02); border-radius: 6px; padding: 8px; margin-top: 8px; }
+  summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HyperDAG Fleet — 12 agents, on-chain via ERC-8004 Identity Registry</h1>
+  <p>
+    Live status, queried direct from the
+    <a href="https://sepolia.basescan.org/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noopener">
+      Identity Registry contract
+    </a>
+    on Base Sepolia. Verify yourself — every agent is queryable on-chain.
+  </p>
+</header>
+
+<div class="topbar">
+  <div class="stat"><strong id="fleet-size">—</strong>Fleet size</div>
+  <div class="stat"><strong id="discoverable" style="color: var(--accent)">—</strong>Fully discoverable</div>
+  <div class="stat"><strong id="issues" style="color: var(--bad)">—</strong>Issues</div>
+  <div class="stat"><strong id="last-checked">—</strong>Last verified</div>
+  <div class="stat" style="margin-left: auto">
+    Endpoint:
+    <input id="endpoint-input" value="https://repid-engine-production.up.railway.app/api/v1/fleet/status">
+    <button id="endpoint-go" style="margin-left: 4px">refresh</button>
+  </div>
+</div>
+
+<div id="errbar" class="errbar" style="display: none"></div>
+
+<div id="grid" class="grid"></div>
+
+<footer>
+  Verify yourself — every agent is queryable on-chain at
+  <a href="https://sepolia.basescan.org/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noopener">
+    0x8004A818BFB912233c491871b3d84c89A494BD9e
+  </a>.
+  This page calls
+  <code>GET /api/v1/fleet/status</code>; the endpoint runs the same
+  read-only RPC query you would.
+</footer>
+
+<script>
+const endpointInput = document.getElementById('endpoint-input');
+const grid = document.getElementById('grid');
+const errbar = document.getElementById('errbar');
+
+function statusPill(agent) {
+  if (agent.error) return `<span class="pill bad">error</span>`;
+  if (!agent.on_chain) return `<span class="pill bad">not registered</span>`;
+  if (agent.metadata_inline && agent.metadata_reachable) return `<span class="pill ok">verified</span>`;
+  if (agent.metadata_reachable) return `<span class="pill warn">off-chain URI</span>`;
+  return `<span class="pill bad">orphan / 404</span>`;
+}
+
+function shortAddr(a) {
+  if (!a) return '—';
+  return a.slice(0, 6) + '…' + a.slice(-4);
+}
+
+function shortenURI(u) {
+  if (!u) return '—';
+  if (u.startsWith('data:')) return 'data:application/json;... (inline)';
+  return u.length > 60 ? u.slice(0, 60) + '…' : u;
+}
+
+function renderCard(a) {
+  const dups = (a.duplicates && a.duplicates.length)
+    ? `<div class="row"><span class="k">duplicates</span><span class="v">${a.duplicates.join(', ')}</span></div>`
+    : '';
+  const summary = a.metadata_summary
+    ? `<div class="row"><span class="k">metadata.name</span><span class="v">${a.metadata_summary.name ?? '—'}</span></div>`
+    : '';
+  const explorer = a.explorer_url
+    ? `<div class="row"><span class="k">explorer</span><span class="v"><a href="${a.explorer_url}" target="_blank" rel="noopener">view</a></span></div>`
+    : '';
+  return `
+    <div class="card" data-name="${a.name}">
+      <div>
+        <span class="name">${a.name}</span>
+        ${statusPill(a)}
+      </div>
+      <div class="role">${a.fleet_role ?? a.agent_class ?? ''}</div>
+      <div class="row"><span class="k">on-chain</span><span class="v">${a.on_chain ? 'yes' : 'no'}</span></div>
+      <div class="row"><span class="k">token id</span><span class="v">${a.token_id ?? '—'}</span></div>
+      <div class="row"><span class="k">owner</span><span class="v" title="${a.owner ?? ''}">${shortAddr(a.owner)}</span></div>
+      <div class="row"><span class="k">metadata</span><span class="v" title="${a.metadata_uri ?? ''}">${shortenURI(a.metadata_uri)}</span></div>
+      <div class="row"><span class="k">inline</span><span class="v">${a.metadata_inline ? 'yes' : 'no'}</span></div>
+      <div class="row"><span class="k">reachable</span><span class="v">${a.metadata_reachable ? 'yes' : 'no'}</span></div>
+      <div class="row"><span class="k">tier</span><span class="v">${a.rep_id_tier ?? '—'}</span></div>
+      ${summary}
+      ${explorer}
+      ${dups}
+      ${a.error ? `<div class="row"><span class="k">error</span><span class="v" style="color: var(--bad)">${a.error}</span></div>` : ''}
+      <details>
+        <summary>raw json</summary>
+        <pre>${JSON.stringify(a, null, 2)}</pre>
+      </details>
+    </div>
+  `;
+}
+
+async function refresh() {
+  errbar.style.display = 'none';
+  grid.innerHTML = '<p style="color: var(--muted); padding: 0 24px">loading…</p>';
+  try {
+    const r = await fetch(endpointInput.value);
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+    const data = await r.json();
+    document.getElementById('fleet-size').textContent = data.fleet_size;
+    document.getElementById('discoverable').textContent = data.fully_discoverable;
+    document.getElementById('issues').textContent = data.issues;
+    document.getElementById('last-checked').textContent = (data.agents?.[0]?.last_verified ?? '').slice(11, 19) || 'now';
+    grid.innerHTML = (data.agents ?? []).map(renderCard).join('');
+  } catch (e) {
+    errbar.style.display = 'block';
+    errbar.textContent = `Could not load fleet status: ${e.message}. Make sure the endpoint is reachable.`;
+    grid.innerHTML = '';
+  }
+}
+
+document.getElementById('endpoint-go').addEventListener('click', refresh);
+endpointInput.addEventListener('keydown', e => { if (e.key === 'Enter') refresh(); });
+refresh();
+</script>
+
+</body>
+</html>
