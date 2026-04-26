@@ -1,16 +1,3 @@
-<div align="center">
-  <h1>trustrepid</h1>
-  <p><strong>Part of the HyperDAG Ecosystem</strong></p>
-  <p>
-    <img src="https://img.shields.io/badge/status-active-success.svg" alt="Status" />
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
-  </p>
-</div>
-
-## 🌐 Ecosystem Context
-
-The HyperDAG ecosystem is a suite of purpose-aligned agentic infrastructure. `trustrepid` plays a critical role in the broader architecture, interacting closely with its sibling repositories to provide verifiable trust and scalable coordination.
-
 # TrustRepID — Constitutional Trust Infrastructure for the Agentic Economy
 
 > **"ERC-8004 gives agents a passport. x402 gives them a wallet. HyperDAG gives them a character."**
@@ -475,17 +462,3 @@ hyperdag-protocol  →  Public protocol repo · ERC-8004 reference implementatio
 *TrustRepID.dev · April 2026 · Sean Goodwin · HyperDAG Protocol*
 *Constitutional trust infrastructure for the agentic economy*
 *Micah 6:8 · Phil 4:8 · Luke 6:31 · James 2:18*
-
----
-
-## 🔗 Related Projects in the Ecosystem
-
-- [hyperdag-protocol](https://github.com/DealAppSeo/hyperdag-protocol) — The L1 specification.
-- [hyperdag-core](https://github.com/DealAppSeo/hyperdag-core) — ZKP primitives.
-- [trinity-symphony-shared](https://github.com/DealAppSeo/trinity-symphony-shared) — Agent infrastructure.
-- [repid](https://github.com/DealAppSeo/repid) — The reputation engine.
-- [trustrepid](https://github.com/DealAppSeo/trustrepid) — SDK and integration layer.
-
-## 🤝 Contributing
-
-We actively welcome community contributions! Please check out our [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) to get started. Whether you're fixing bugs, improving docs, or proposing new features, we're excited to have you on board.
