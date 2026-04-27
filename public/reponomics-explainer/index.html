@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reponomics — explainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.65 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:28px;margin:0 0 6px}
+  .lede{color:var(--muted);margin:0 0 32px;max-width:640px}
+  h2{font-size:20px;margin:36px 0 8px;color:var(--accent)}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin:14px 0}
+  code{background:#0a0e23;padding:2px 6px;border-radius:3px;font-size:13px;color:var(--accent)}
+  pre{background:#0a0e23;border:1px solid var(--border);border-radius:6px;padding:12px;overflow:auto;font-size:12px}
+  a{color:var(--link)}
+  .num{display:inline-block;width:30px;height:30px;border-radius:50%;background:rgba(110,231,183,0.15);color:var(--accent);text-align:center;line-height:30px;font-weight:600;margin-right:8px;vertical-align:middle}
+  svg{display:block;margin:12px auto;max-width:100%}
+  .stack{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .stack > div{flex:1;min-width:180px;background:#0a0e23;border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px}
+  footer{color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding-top:20px;margin-top:48px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Why reponomics?</h1>
+<p class="lede">
+  A reputation economy where capital alone doesn't dominate, mission
+  alignment compounds, and Sybil attacks decay on their own. Five
+  ideas. None of them is novel in isolation; the combination is.
+</p>
+
+<h2><span class="num">1</span>Why two builders?</h2>
+<div class="panel">
+  <p>
+    Two builders fund competing trading agents. Builder W (wealthy
+    operator) deposits $1,000 of testnet USDC and runs five
+    "discardable" sybil agents. Builder M (mission builder) deposits
+    $50 and runs one carefully-curated agent.
+  </p>
+  <p>
+    A capital-only system would give W twenty times the trading
+    authority. Reponomics gives M <em>more</em>, because M's agent
+    builds wisdom (calibrated confidence) and character (helps
+    low-RepID counterparties) over time. W's sybils never accrue
+    either.
+  </p>
+</div>
+
+<h2><span class="num">2</span>What's RepID?</h2>
+<div class="panel">
+  <p>
+    Behavioural credit, in <code>[0, 10000]</code>. Every claim and
+    challenge moves it up or down per the math in
+    <code>hyperdag-protocol/METHODOLOGY.md</code>. Reponomics layers
+    Wisdom (W) and Character (C) on top — both bounded
+    <code>[100, 2000]</code> and computed from the agent's own
+    history.
+  </p>
+  <div class="stack">
+    <div><strong>Earned</strong><br>actions verified on-chain — bets, attestations, challenges</div>
+    <div><strong>Perceived</strong><br>peer attestations weighted by attesters' RepID</div>
+    <div><strong>Combined</strong><br>0.7 × earned + 0.3 × perceived</div>
+  </div>
+</div>
+
+<h2><span class="num">3</span>Why W and C?</h2>
+<div class="panel">
+  <p>
+    <strong>Wisdom</strong> measures calibration. Over the trailing 50
+    bets we compute <code>|mean_claimed_confidence -
+    actual_accuracy|</code>. If that error exceeds the Pythagorean
+    Comma threshold (<code>0.0136433</code>), we apply the comma as a
+    penalty: <code>W ← floor(W / 1.0136433)</code>. Well-calibrated
+    agents earn a small reward (<code>×1.001</code>) per round.
+  </p>
+  <p>
+    <strong>Character</strong> measures mission alignment. Four event
+    types feed it:
+  </p>
+  <pre>trade_with_low_repid       +5    (counterparty has lower RepID)
+attestation_to_low_repid   +10
+underserved_domain_action  +15   (domain has &lt;100 historical trades)
+agent_abandonment          -20   (operator stops engaging)</pre>
+  <p>
+    Both bounded so a single great or terrible round can't lock the
+    score. Movement happens incrementally across many rounds — same
+    pattern as long-form credit.
+  </p>
+</div>
+
+<h2><span class="num">4</span>Why quadratic stake?</h2>
+<div class="panel">
+  <p>
+    Trading authority scales with <em>square root</em> of stake, not
+    stake itself:
+  </p>
+  <pre>authority = √stake × (R × W × C / 1e6) / 1e4</pre>
+  <p>
+    Concrete: 100× more stake produces 10× more authority, not 100×.
+    Capital concentration still helps, but mission alignment
+    (R × W × C) is the bigger lever.
+  </p>
+  <p>
+    Worked example with $1,000 vs $50:
+  </p>
+  <pre>Builder W:  √1B × (5500×900×600/1e6)  / 1e4 ≈  9,392
+Builder M:  √50M × (7000×1500×1700/1e6) / 1e4 ≈ 12,622</pre>
+  <p>
+    Mission Builder with 1/20th the stake has <em>more</em> trading
+    authority. That's the reponomics promise — verified, not just
+    asserted, by the live demo.
+  </p>
+</div>
+
+<h2><span class="num">5</span>Why ghost cohort decay?</h2>
+<div class="panel">
+  <p>
+    Builder RepID = mean(active agents) − ghost_count × 100, where an
+    agent is a "ghost" after 7 days inactive. Sybil attacks fail
+    structurally: spawning many agents drives the mean down (sybils
+    are average), and abandoning losers piles up ghost penalty.
+  </p>
+  <p>
+    A floor at <code>builder_repid &lt; 5000 ⇒ authority = 0</code>
+    forces builders to maintain at least one healthy active agent —
+    you can't pump the demo with stake alone. The ghost decay is what
+    turns "operator strategy" into "mission strategy" over time.
+  </p>
+</div>
+
+<footer>
+  <p>
+    See it live: <a href="/reponomics-demo/">two-builder demo</a> ·
+    <a href="/demo-tour-v2/">full demo tour</a>
+  </p>
+  <p>
+    Source: <code>repid-engine/src/services/{stake-vault,wisdom-score,character-score,builder-registry}.ts</code>.
+    Spec: <code>trustrepid/docs/REPONOMICS-MODEL.md</code>.
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
