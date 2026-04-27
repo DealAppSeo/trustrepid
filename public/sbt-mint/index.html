@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SBT mint — HyperDAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  .lede { color: var(--muted); margin: 0 0 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input { width: 100%; background: #0a0e23; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font: inherit; font-family: ui-monospace, monospace; font-size: 13px; }
+  button { background: var(--accent); color: #0a0e23; border: 0; border-radius: 6px; padding: 9px 14px; font: inherit; font-weight: 600; cursor: pointer; margin-right: 8px; margin-top: 8px; }
+  button:hover:not(:disabled) { background: #4cd7a3; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary { background: rgba(147,197,253,0.15); color: var(--link); border: 1px solid var(--link); }
+  pre { background: #0a0e23; border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow: auto; font-size: 12px; max-height: 320px; }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; gap: 12px; }
+  .row .k { color: var(--muted); flex-shrink: 0; }
+  .row .v { font-family: ui-monospace, monospace; word-break: break-all; text-align: right; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+  .pill.mock { background: rgba(250,204,21,0.15); color: var(--warn); }
+  .pill.live { background: rgba(110,231,183,0.15); color: var(--accent); }
+  .pill.bad { background: rgba(248,113,113,0.15); color: var(--bad); }
+  a { color: var(--link); }
+  .step-status { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .step-status.done { color: var(--accent); }
+  .step-status.err { color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Mint a SoulBound Token</h1>
+<p class="lede">
+  Three steps: connect wallet, sign challenge, submit mint. Returns a
+  token id + metadata URI + audit-chain entry id. Default mode is MOCK
+  (no on-chain transaction); the response will say so explicitly.
+</p>
+
+<div class="panel">
+  <label>API endpoint</label>
+  <input id="api" value="https://repid-engine-production.up.railway.app">
+</div>
+
+<div class="panel">
+  <h3 style="margin: 0 0 8px">Step 1 — Connect wallet</h3>
+  <button id="btn-connect">Connect MetaMask</button>
+  <div class="step-status" id="status-connect">Not connected</div>
+  <div class="row" style="margin-top: 8px"><span class="k">Holder address</span><span class="v" id="holder">—</span></div>
+</div>
+
+<div class="panel">
+  <h3 style="margin: 0 0 8px">Step 2 — Sign challenge</h3>
+  <button id="btn-sign" disabled>Request &amp; sign challenge</button>
+  <div class="step-status" id="status-sign">Waiting for connect</div>
+  <div class="row" style="margin-top: 8px"><span class="k">Challenge</span><span class="v" id="chal" style="max-width: 60%">—</span></div>
+  <div class="row"><span class="k">Signature</span><span class="v" id="sig" style="max-width: 60%">—</span></div>
+</div>
+
+<div class="panel">
+  <h3 style="margin: 0 0 8px">Step 3 — Submit mint</h3>
+  <button id="btn-mint" disabled>Submit mint</button>
+  <div class="step-status" id="status-mint">Waiting for signature</div>
+</div>
+
+<div class="panel" id="result-panel" style="display: none">
+  <h3 style="margin: 0 0 8px">Result <span id="mode-pill" class="pill"></span></h3>
+  <div class="row"><span class="k">status</span><span class="v" id="r-status">—</span></div>
+  <div class="row"><span class="k">token id</span><span class="v" id="r-token">—</span></div>
+  <div class="row"><span class="k">tx hash</span><span class="v" id="r-tx">—</span></div>
+  <div class="row"><span class="k">explorer</span><span class="v" id="r-explorer">—</span></div>
+  <div class="row"><span class="k">audit chain id</span><span class="v" id="r-audit">—</span></div>
+  <div class="row"><span class="k">commitment</span><span class="v" id="r-commit">—</span></div>
+  <details style="margin-top: 8px">
+    <summary style="cursor: pointer; color: var(--muted)">raw response</summary>
+    <pre id="r-raw"></pre>
+  </details>
+</div>
+
+<p style="color: var(--muted); font-size: 13px">
+  <a href="/demo-tour/">Back to demo tour</a> ·
+  Spec: <a href="https://github.com/DealAppSeo/hyperdag-protocol" target="_blank" rel="noopener">SBT-MINTING-FLOW.md</a>
+</p>
+
+</div>
+
+<script>
+const apiInput = document.getElementById('api');
+let holder = null;
+let challenge = null;
+let signature = null;
+
+function api(path) { return apiInput.value.replace(/\/$/, '') + path; }
+function setStatus(id, msg, cls) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'step-status ' + (cls || '');
+}
+
+document.getElementById('btn-connect').addEventListener('click', async () => {
+  if (!window.ethereum) {
+    setStatus('status-connect', 'No window.ethereum found — install MetaMask.', 'err');
+    return;
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    holder = accounts[0];
+    document.getElementById('holder').textContent = holder;
+    setStatus('status-connect', 'Connected.', 'done');
+    setStatus('status-sign', 'Ready.');
+    document.getElementById('btn-sign').disabled = false;
+  } catch (e) {
+    setStatus('status-connect', 'User rejected: ' + e.message, 'err');
+  }
+});
+
+document.getElementById('btn-sign').addEventListener('click', async () => {
+  setStatus('status-sign', 'Requesting challenge...');
+  try {
+    const r = await fetch(api('/api/v1/sbt/challenge?holder=' + holder));
+    if (!r.ok) throw new Error('challenge request failed: ' + r.status);
+    const j = await r.json();
+    challenge = j.challenge;
+    document.getElementById('chal').textContent = challenge;
+    setStatus('status-sign', 'Signing...');
+    signature = await window.ethereum.request({
+      method: 'personal_sign',
+      params: [challenge, holder],
+    });
+    document.getElementById('sig').textContent = signature.slice(0, 20) + '…';
+    setStatus('status-sign', 'Signed.', 'done');
+    setStatus('status-mint', 'Ready.');
+    document.getElementById('btn-mint').disabled = false;
+  } catch (e) {
+    setStatus('status-sign', 'Failed: ' + e.message, 'err');
+  }
+});
+
+document.getElementById('btn-mint').addEventListener('click', async () => {
+  setStatus('status-mint', 'Submitting mint...');
+  try {
+    const r = await fetch(api('/api/v1/sbt/mint'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ holder_address: holder, signed_challenge: signature }),
+    });
+    const j = await r.json();
+    if (!r.ok) {
+      setStatus('status-mint', 'Failed: ' + (j.error || j.notes || r.status), 'err');
+      return;
+    }
+    document.getElementById('result-panel').style.display = '';
+    const pill = document.getElementById('mode-pill');
+    if (j.is_mock) {
+      pill.textContent = 'MOCK';
+      pill.className = 'pill mock';
+    } else {
+      pill.textContent = 'LIVE';
+      pill.className = 'pill live';
+    }
+    document.getElementById('r-status').textContent = j.status ?? '—';
+    document.getElementById('r-token').textContent = j.token_id ?? '—';
+    document.getElementById('r-tx').textContent = j.tx_hash ?? '—';
+    document.getElementById('r-explorer').innerHTML = j.explorer_url
+      ? `<a href="${j.explorer_url}" target="_blank">view on BaseScan</a>`
+      : '— (mock or pending)';
+    document.getElementById('r-audit').textContent = j.audit_chain_id ?? '—';
+    document.getElementById('r-commit').textContent = (j.rep_id_commitment || '').slice(0, 24) + '…';
+    document.getElementById('r-raw').textContent = JSON.stringify(j, null, 2);
+    setStatus('status-mint', 'Done.', 'done');
+  } catch (e) {
+    setStatus('status-mint', 'Failed: ' + e.message, 'err');
+  }
+});
+</script>
+</body>
+</html>
