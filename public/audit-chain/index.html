@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audit chain — HyperDAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  .lede { color: var(--muted); margin: 0 0 20px; }
+  .topbar { display: flex; gap: 16px; flex-wrap: wrap; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; }
+  .stat strong { display: block; font-size: 18px; color: var(--text); }
+  .stat { font-size: 12px; color: var(--muted); }
+  .controls { padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .controls input { width: 100px; background: #0a0e23; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font: inherit; font-family: ui-monospace, monospace; font-size: 12px; }
+  .controls input.api { width: 360px; }
+  button { background: var(--accent); color: #0a0e23; border: 0; border-radius: 6px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  button:hover { background: #4cd7a3; }
+  button.secondary { background: rgba(147,197,253,0.15); color: var(--link); border: 1px solid var(--link); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { background: rgba(255,255,255,0.03); color: var(--muted); font-weight: 500; font-size: 12px; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td.hash { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.event { font-family: ui-monospace, monospace; font-size: 12px; color: var(--accent); }
+  td.id { font-family: ui-monospace, monospace; }
+  pre { background: #0a0e23; border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow: auto; font-size: 12px; max-height: 320px; margin-top: 12px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+  .pill.ok { background: rgba(110,231,183,0.15); color: var(--accent); }
+  .pill.bad { background: rgba(248,113,113,0.15); color: var(--bad); }
+  .pill.warn { background: rgba(250,204,21,0.15); color: var(--warn); }
+  a { color: var(--link); }
+  .errbar { background: rgba(248,113,113,0.1); color: var(--bad); padding: 12px; border: 1px solid var(--bad); border-radius: 6px; margin-bottom: 16px; display: none; }
+  #verify-panel { margin-top: 16px; padding: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>HyperDAG audit chain</h1>
+<p class="lede">
+  Every SBT mint and every RepID threshold proof emits a row to
+  <code>hal_audit_chain</code>, hash-chained to the previous row. Range-
+  verify any window to confirm chain integrity yourself. No trust
+  assumptions — re-hash anything you see.
+</p>
+
+<div class="topbar">
+  <div class="stat"><strong id="stat-total">—</strong>total entries</div>
+  <div class="stat"><strong id="stat-integrity">—</strong>integrity</div>
+  <div class="stat"><strong id="stat-newest">—</strong>newest event at</div>
+  <div class="stat"><strong id="stat-oldest">—</strong>oldest event at</div>
+</div>
+
+<div class="controls">
+  <span style="color: var(--muted)">Endpoint:</span>
+  <input class="api" id="api" value="https://repid-engine-production.up.railway.app">
+  <button id="btn-refresh">Refresh</button>
+  <span style="color: var(--muted); margin-left: 16px">Verify range:</span>
+  <input id="from-id" placeholder="from" value="1">
+  <input id="to-id" placeholder="to">
+  <button id="btn-verify" class="secondary">Verify</button>
+</div>
+
+<div id="errbar" class="errbar"></div>
+
+<table>
+  <thead><tr>
+    <th>id</th><th>event_type</th><th>source_table</th><th>source_id</th>
+    <th>hash</th><th>created_at</th>
+  </tr></thead>
+  <tbody id="tbody"><tr><td colspan="6" style="color: var(--muted); padding: 24px">loading…</td></tr></tbody>
+</table>
+
+<div id="verify-panel">
+  <h3 style="margin: 0 0 8px">Range verify result</h3>
+  <pre id="verify-out"></pre>
+</div>
+
+<p style="color: var(--muted); font-size: 13px; margin-top: 24px">
+  <a href="/demo-tour/">Back to demo tour</a> ·
+  Auto-refresh every 30s
+</p>
+
+</div>
+
+<script>
+const apiInput = document.getElementById('api');
+const errbar = document.getElementById('errbar');
+const tbody = document.getElementById('tbody');
+
+function api(path) { return apiInput.value.replace(/\/$/, '') + path; }
+
+function showErr(msg) {
+  errbar.style.display = 'block';
+  errbar.textContent = msg;
+}
+function hideErr() { errbar.style.display = 'none'; }
+
+async function loadStats() {
+  try {
+    const r = await fetch(api('/api/v1/audit-chain/stats'));
+    if (!r.ok) throw new Error('stats: ' + r.status);
+    const j = await r.json();
+    document.getElementById('stat-total').textContent = j.total_entries;
+    const integrity = document.getElementById('stat-integrity');
+    if (j.integrity_status === 'valid') {
+      integrity.innerHTML = '<span class="pill ok">VALID</span>';
+    } else if (j.integrity_status === 'broken') {
+      integrity.innerHTML = '<span class="pill bad">BROKEN @ ' + (j.first_break_at_id ?? '?') + '</span>';
+    } else {
+      integrity.innerHTML = '<span class="pill warn">UNKNOWN</span>';
+    }
+    document.getElementById('stat-newest').textContent = j.newest_at ? j.newest_at.slice(11, 19) : '—';
+    document.getElementById('stat-oldest').textContent = j.oldest_at ? j.oldest_at.slice(0, 10) : '—';
+  } catch (e) {
+    showErr('stats failed: ' + e.message);
+  }
+}
+
+async function loadRecent() {
+  try {
+    const r = await fetch(api('/api/v1/audit-chain/recent?limit=50'));
+    if (!r.ok) throw new Error('recent: ' + r.status);
+    const j = await r.json();
+    if (!j.entries || j.entries.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color: var(--muted); padding: 24px">no entries</td></tr>';
+      return;
+    }
+    tbody.innerHTML = j.entries.map(e => `
+      <tr>
+        <td class="id">${e.id}</td>
+        <td class="event">${e.event_type ?? '—'}</td>
+        <td>${e.source_table}</td>
+        <td>${e.source_id.length > 24 ? e.source_id.slice(0, 24) + '…' : e.source_id}</td>
+        <td class="hash" title="${e.current_entry_hash}">${e.current_entry_hash.slice(0, 16)}…</td>
+        <td>${e.created_at?.slice(0, 19).replace('T', ' ') ?? '—'}</td>
+      </tr>
+    `).join('');
+    hideErr();
+  } catch (e) {
+    showErr('recent failed: ' + e.message);
+    tbody.innerHTML = '';
+  }
+}
+
+async function refresh() {
+  await Promise.all([loadStats(), loadRecent()]);
+}
+
+async function verifyRange() {
+  const fromId = document.getElementById('from-id').value || 1;
+  const toId = document.getElementById('to-id').value || fromId;
+  const r = await fetch(api(`/api/v1/audit-chain/verify?from_id=${fromId}&to_id=${toId}`));
+  const j = await r.json();
+  document.getElementById('verify-panel').style.display = '';
+  document.getElementById('verify-out').textContent = JSON.stringify(j, null, 2);
+}
+
+document.getElementById('btn-refresh').addEventListener('click', refresh);
+document.getElementById('btn-verify').addEventListener('click', verifyRange);
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>
