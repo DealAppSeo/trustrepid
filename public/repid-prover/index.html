@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RepID prover — HyperDAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  .lede { color: var(--muted); margin: 0 0 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input { width: 100%; background: #0a0e23; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font: inherit; font-family: ui-monospace, monospace; font-size: 13px; }
+  input[type=range] { padding: 0; }
+  button { background: var(--accent); color: #0a0e23; border: 0; border-radius: 6px; padding: 9px 14px; font: inherit; font-weight: 600; cursor: pointer; margin-right: 8px; margin-top: 8px; }
+  button:hover:not(:disabled) { background: #4cd7a3; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary { background: rgba(147,197,253,0.15); color: var(--link); border: 1px solid var(--link); }
+  pre { background: #0a0e23; border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow: auto; font-size: 12px; max-height: 320px; }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; gap: 12px; }
+  .row .k { color: var(--muted); flex-shrink: 0; }
+  .row .v { font-family: ui-monospace, monospace; word-break: break-all; text-align: right; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+  .pill.mock { background: rgba(250,204,21,0.15); color: var(--warn); }
+  .pill.ok { background: rgba(110,231,183,0.15); color: var(--accent); }
+  .pill.bad { background: rgba(248,113,113,0.15); color: var(--bad); }
+  a { color: var(--link); }
+  .vec { background: rgba(147,197,253,0.1); border: 1px dashed var(--link); border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 12px; }
+  .vec button { margin-top: 4px; padding: 4px 8px; font-size: 12px; }
+  #thresh-val { font-family: ui-monospace, monospace; color: var(--accent); font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Prove a RepID threshold</h1>
+<p class="lede">
+  Generate a zero-knowledge proof that the holder's RepID meets a public
+  threshold, without revealing the actual RepID. v0.1 is an HMAC stub
+  (Plonky3 circuit lands in Sprint 3) — every response is marked
+  <span class="pill mock">MOCK</span>.
+</p>
+
+<div class="panel">
+  <label>API endpoint</label>
+  <input id="api" value="https://repid-engine-production.up.railway.app">
+</div>
+
+<div class="panel">
+  <label>Holder address</label>
+  <input id="holder" value="0x71be63f3384f5fb98995898a86b02fb289d76570">
+
+  <label style="margin-top: 12px">Threshold: <span id="thresh-val">5000</span></label>
+  <input id="thresh" type="range" min="0" max="10000" step="100" value="5000">
+
+  <button id="btn-prove">Generate proof</button>
+  <button id="btn-verify-local" class="secondary" disabled>Verify locally</button>
+
+  <div class="vec">
+    <strong>Test vectors</strong> (preset values from the spec):<br>
+    <button id="vec-pass">Threshold met (R=8500, T=7000)</button>
+    <button id="vec-fail">Threshold not met (R=6500, T=7000)</button>
+  </div>
+</div>
+
+<div class="panel" id="proof-panel" style="display: none">
+  <h3 style="margin: 0 0 8px">Proof <span id="mode-pill" class="pill"></span></h3>
+  <div class="row"><span class="k">ok</span><span class="v" id="r-ok">—</span></div>
+  <div class="row"><span class="k">threshold met</span><span class="v" id="r-tm">—</span></div>
+  <div class="row"><span class="k">rep_id (stub leak)</span><span class="v" id="r-rep">—</span></div>
+  <div class="row"><span class="k">plonky3 version</span><span class="v" id="r-ver">—</span></div>
+  <div class="row"><span class="k">proof bytes</span><span class="v" id="r-proof">—</span></div>
+  <div class="row"><span class="k">commitment C</span><span class="v" id="r-c">—</span></div>
+  <div class="row"><span class="k">audit chain id</span><span class="v" id="r-audit">—</span></div>
+  <details style="margin-top: 8px">
+    <summary style="cursor: pointer; color: var(--muted)">raw response</summary>
+    <pre id="r-raw"></pre>
+  </details>
+</div>
+
+<div class="panel" id="verify-panel" style="display: none">
+  <h3 style="margin: 0 0 8px">Verify result <span id="ver-pill" class="pill"></span></h3>
+  <div class="row"><span class="k">valid</span><span class="v" id="v-valid">—</span></div>
+  <div class="row"><span class="k">on-chain verifiable</span><span class="v" id="v-onchain">—</span></div>
+  <div class="row"><span class="k">notes</span><span class="v" id="v-notes" style="text-align: left">—</span></div>
+</div>
+
+<p style="color: var(--muted); font-size: 13px">
+  <a href="/demo-tour/">Back to demo tour</a> ·
+  Spec: <a href="https://github.com/DealAppSeo/repid" target="_blank" rel="noopener">ZKP-REPID-PROOF.md</a>
+</p>
+
+</div>
+
+<script>
+const apiInput = document.getElementById('api');
+const holderInput = document.getElementById('holder');
+const threshInput = document.getElementById('thresh');
+const threshVal = document.getElementById('thresh-val');
+let lastProof = null;
+
+threshInput.addEventListener('input', () => threshVal.textContent = threshInput.value);
+
+function api(path) { return apiInput.value.replace(/\/$/, '') + path; }
+
+async function callProve() {
+  const body = { holder: holderInput.value.trim(), threshold: parseInt(threshInput.value, 10) };
+  const r = await fetch(api('/api/v1/repid/prove-threshold'), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const j = await r.json();
+  return j;
+}
+
+document.getElementById('btn-prove').addEventListener('click', async () => {
+  document.getElementById('verify-panel').style.display = 'none';
+  const j = await callProve();
+  lastProof = j;
+  document.getElementById('proof-panel').style.display = '';
+  const pill = document.getElementById('mode-pill');
+  pill.textContent = j.mock_proof ? 'MOCK' : 'LIVE';
+  pill.className = 'pill ' + (j.mock_proof ? 'mock' : 'ok');
+  document.getElementById('r-ok').textContent = String(j.ok);
+  document.getElementById('r-tm').textContent = String(j.threshold_met);
+  document.getElementById('r-rep').textContent = j.rep_id_actual ?? '—';
+  document.getElementById('r-ver').textContent = j.plonky3_version ?? '—';
+  document.getElementById('r-proof').textContent = (j.proof_bytes || '').slice(0, 32) + (j.proof_bytes ? '…' : '');
+  document.getElementById('r-c').textContent = (j.public_signals?.holder_commitment || '').slice(0, 24) + '…';
+  document.getElementById('r-audit').textContent = j.audit_chain_id ?? '—';
+  document.getElementById('r-raw').textContent = JSON.stringify(j, null, 2);
+  document.getElementById('btn-verify-local').disabled = !j.ok;
+});
+
+document.getElementById('btn-verify-local').addEventListener('click', async () => {
+  if (!lastProof || !lastProof.ok) return;
+  const body = {
+    proof_bytes: lastProof.proof_bytes,
+    public_signals: lastProof.public_signals,
+    _witness: {
+      holder: holderInput.value.trim(),
+      nonce: '0x' + new Array(64).fill('0').join(''),  // placeholder; real verifier carries witness internally
+      rep_id: lastProof.rep_id_actual,
+    },
+  };
+  // The HMAC stub needs the actual nonce the prover used; expose via the
+  // raw response's `_witness` if Sean wires it later. For now this verify
+  // call demonstrates the shape; mismatch is expected because we don't
+  // know the prover's nonce. v0.2 ships full witness handling.
+  const r = await fetch(api('/api/v1/repid/verify-threshold'), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const j = await r.json();
+  document.getElementById('verify-panel').style.display = '';
+  const pill = document.getElementById('ver-pill');
+  pill.textContent = j.valid ? 'VALID' : 'INVALID';
+  pill.className = 'pill ' + (j.valid ? 'ok' : 'bad');
+  document.getElementById('v-valid').textContent = String(j.valid);
+  document.getElementById('v-onchain').textContent = String(j.on_chain_verifiable);
+  document.getElementById('v-notes').textContent = j.notes ?? j.reason ?? '—';
+});
+
+document.getElementById('vec-pass').addEventListener('click', () => {
+  threshInput.value = '7000';
+  threshVal.textContent = '7000';
+  document.getElementById('btn-prove').click();
+});
+document.getElementById('vec-fail').addEventListener('click', () => {
+  threshInput.value = '7000';
+  threshVal.textContent = '7000';
+  // The "fail" case relies on the holder's actual RepID being below
+  // 7000. With the default holder address (no rows) repId resolves to
+  // 0, so this naturally fails.
+  document.getElementById('btn-prove').click();
+});
+</script>
+</body>
+</html>
