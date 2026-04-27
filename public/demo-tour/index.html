@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HyperDAG demo tour — four working flows</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0b1020; --panel: #121835; --border: #243066;
+    --text: #e6ecff; --muted: #8c97c4;
+    --accent: #6ee7b7; --warn: #facc15; --bad: #f87171;
+    --link: #93c5fd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 24px; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  h2 { font-size: 20px; margin: 28px 0 8px; }
+  .lede { color: var(--muted); margin-bottom: 24px; max-width: 720px; }
+  .step { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 16px 0; display: flex; gap: 20px; align-items: flex-start; }
+  .step .num { width: 36px; height: 36px; border-radius: 50%; background: rgba(110, 231, 183, 0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
+  .step .body { flex: 1; }
+  .step h3 { margin: 0 0 4px; font-size: 16px; }
+  .step p { margin: 0 0 12px; color: var(--muted); }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 8px 14px; background: rgba(147, 197, 253, 0.15); color: var(--link); border: 1px solid var(--link); border-radius: 6px; text-decoration: none; font-size: 13px; }
+  .btn:hover { background: rgba(147, 197, 253, 0.25); }
+  .btn.primary { background: var(--accent); color: #0a0e23; border-color: var(--accent); }
+  .btn.primary:hover { background: #4cd7a3; }
+  code { background: #0a0e23; padding: 2px 6px; border-radius: 3px; font-size: 12px; color: var(--accent); }
+  footer { color: var(--muted); margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 13px; }
+  a { color: var(--link); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>HyperDAG demo tour</h1>
+<p class="lede">
+  Four working flows. Each has a public endpoint anyone can hit, and a
+  page that calls it. Marco / Vitto / Leonard / public devs can verify
+  every link below by reading either the API response or the on-chain
+  state.
+</p>
+
+<div class="step">
+  <div class="num">1</div>
+  <div class="body">
+    <h3>Look at the fleet on-chain</h3>
+    <p>
+      All 12 Trinity Symphony agents registered to the ERC-8004 Identity
+      Registry on Base Sepolia. Live RPC query — no DB cache trust.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/fleet-status/">Open fleet status</a>
+      <a class="btn" href="/api/v1/fleet/status">Raw API</a>
+      <a class="btn" href="https://github.com/DealAppSeo/repid-engine" target="_blank" rel="noopener">spec</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div class="body">
+    <h3>Mint a SoulBound Token</h3>
+    <p>
+      Connect your wallet, sign a server-issued challenge, get back a
+      token id + IPFS metadata URI + audit-chain entry. v0.1 defaults to
+      MOCK mode (set <code>SBT_MINT_MOCK=0</code> + a funded deployer wallet
+      to switch on real on-chain mints).
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/sbt-mint/">Open SBT mint</a>
+      <a class="btn" href="/api/v1/sbt/challenge?holder=0x71be63f3384f5fb98995898a86b02fb289d76570">Challenge API</a>
+      <a class="btn" href="https://github.com/DealAppSeo/hyperdag-protocol/blob/feat/ecosystem-coherence-2026-04-26/spec/SBT-MINTING-FLOW.md" target="_blank" rel="noopener">spec</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <div class="body">
+    <h3>Prove a RepID threshold</h3>
+    <p>
+      Generate a zero-knowledge proof that <code>R &gt;= T</code> without
+      revealing R. v0.1 uses an HMAC stub — Sprint 3 swaps in a real
+      Plonky3 circuit. The response shape is stable across the swap.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/repid-prover/">Open RepID prover</a>
+      <a class="btn" href="https://github.com/DealAppSeo/repid/blob/feat/protocol-spec-2026-04-26/spec/ZKP-REPID-PROOF.md" target="_blank" rel="noopener">spec</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <div class="body">
+    <h3>Verify the audit chain</h3>
+    <p>
+      Every mint and every proof emits a row to <code>hal_audit_chain</code>,
+      hash-chained to the previous row. Range-verify any window to
+      confirm integrity yourself.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/audit-chain/">Open audit chain</a>
+      <a class="btn" href="/api/v1/audit-chain/recent?limit=20">Recent API</a>
+      <a class="btn" href="/api/v1/audit-chain/stats">Stats API</a>
+    </div>
+  </div>
+</div>
+
+<h2>Verify directly from chain</h2>
+<p style="color: var(--muted)">
+  None of these pages is a black box. Every claim resolves to either an
+  on-chain query against
+  <a href="https://sepolia.basescan.org/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noopener">
+    0x8004A818BFB912233c491871b3d84c89A494BD9e
+  </a>
+  on Base Sepolia, or a hash-chain row in <code>hal_audit_chain</code>
+  that anyone can re-hash. The endpoints labelled "MOCK" return
+  deterministic data with explicit <code>is_mock: true</code> and
+  <code>mock_proof: true</code> indicators — never a silent fake.
+</p>
+
+<footer>
+  HyperDAG Protocol — Trust infrastructure for AI agents and humans.
+  <a href="/fleet-status/">Fleet</a> · <a href="/sbt-mint/">SBT mint</a> ·
+  <a href="/repid-prover/">RepID prover</a> · <a href="/audit-chain/">Audit chain</a>
+</footer>
+
+</div>
+</body>
+</html>
