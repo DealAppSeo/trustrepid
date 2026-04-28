@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrustRepID — Builder Dashboard</title>
+  <style>
+    :root {
+      --bg: #07090d;
+      --panel: #0e1218;
+      --panel-2: #141a23;
+      --border: #1e2630;
+      --text: #d8dee9;
+      --muted: #6b7785;
+      --accent: #5cd1ad;
+      --warn: #f0a868;
+      --bad: #e26370;
+      --link: #7aa6ff;
+      --good-bg: rgba(92, 209, 173, 0.08);
+      --bad-bg: rgba(226, 99, 112, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    h1, h2, h3 { font-weight: 500; margin: 0 0 8px 0; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    h3 { font-size: 13px; color: var(--text); }
+    a { color: var(--link); text-decoration: none; }
+    button {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 120ms;
+    }
+    button:hover { background: #1c232f; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.primary { background: var(--accent); color: #06120e; border-color: var(--accent); font-weight: 600; }
+    button.primary:hover { background: #6cd9b6; }
+    input, select {
+      background: #0a0e13;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12px;
+      border-radius: 4px;
+      width: 100%;
+    }
+    input:focus, select:focus { outline: 1px solid var(--accent); }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .topbar a.back { font-size: 12px; color: var(--muted); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .value { font-size: 18px; margin-top: 4px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-left: 6px;
+    }
+    .badge.real { background: var(--good-bg); color: var(--accent); border: 1px solid var(--accent); }
+    .badge.sim { background: var(--bad-bg); color: var(--warn); border: 1px solid var(--warn); }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .agent-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .agent-card .head { display: flex; justify-content: space-between; align-items: baseline; }
+    .agent-card .name { font-size: 14px; }
+    .agent-card .stats { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .audit-row {
+      font-size: 11px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .audit-row .ev { color: var(--text); }
+    .audit-row .ts { float: right; }
+    .trade-row {
+      font-size: 11px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+    .trade-row.win { color: var(--accent); }
+    .trade-row.loss { color: var(--bad); }
+    .hidden { display: none !important; }
+    pre {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 80px;
+      overflow: auto;
+      margin: 4px 0;
+    }
+    .status-msg { font-size: 11px; color: var(--warn); min-height: 14px; margin-top: 6px; }
+    .ok { color: var(--accent); }
+    .bad { color: var(--bad); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1>TrustRepID — Builder Dashboard</h1>
+      <a class="back" href="/">← back to trustrepid</a>
+    </div>
+
+    <!-- LOGIN VIEW ----------------------------------------------------- -->
+    <div id="login-view" class="panel">
+      <h2>Sign in or create a builder account</h2>
+      <p style="color: var(--muted); font-size: 12px;">
+        Email + password full-account flow. Mint your ERC-7231 SBT, create
+        agents, link Alpaca paper trading, and let your agents trade under
+        a stake-bounded authority cap.
+      </p>
+      <div class="grid" style="margin-top: 12px;">
+        <div>
+          <h3>Sign in</h3>
+          <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="email" /></div>
+          <div class="field"><label>Password</label><input id="login-password" type="password" autocomplete="current-password" /></div>
+          <button class="primary" onclick="doLogin()">Sign in</button>
+          <div id="login-status" class="status-msg"></div>
+        </div>
+        <div>
+          <h3>New builder</h3>
+          <div class="field"><label>Email</label><input id="signup-email" type="email" autocomplete="email" /></div>
+          <div class="field"><label>Password (≥8 chars)</label><input id="signup-password" type="password" autocomplete="new-password" /></div>
+          <button onclick="doSignup()">Create account</button>
+          <div id="signup-status" class="status-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW ------------------------------------------------- -->
+    <div id="dashboard-view" class="hidden">
+      <div class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <div>
+            <div class="label">Builder</div>
+            <div class="value" id="d-email">—</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 4px;" id="d-address">—</div>
+          </div>
+          <div>
+            <div class="label">RepID</div>
+            <div class="value" id="d-repid">—</div>
+          </div>
+          <div>
+            <div class="label">ERC-7231</div>
+            <div class="value" id="d-erc7231">—</div>
+            <button id="mint-btn" onclick="doMint()" style="margin-top: 6px;">Mint ERC-7231</button>
+            <div id="mint-status" class="status-msg"></div>
+          </div>
+          <div>
+            <button onclick="logout()">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Agents -->
+        <div class="panel">
+          <h2>Your agents</h2>
+          <div id="agents-list"></div>
+          <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <h3>Create new agent</h3>
+            <div class="field"><label>Name</label><input id="new-agent-name" placeholder="e.g. SwingTrader-1" /></div>
+            <div class="field"><label>Role (optional)</label><input id="new-agent-role" placeholder="e.g. momentum-equity" /></div>
+            <button onclick="doCreateAgent()">Create agent</button>
+            <div id="agent-status" class="status-msg"></div>
+          </div>
+        </div>
+
+        <!-- Stake & Authority -->
+        <div class="panel">
+          <h2>Stake &amp; authority</h2>
+          <div class="row" style="justify-content: space-between;">
+            <div>
+              <div class="label">Stake total</div>
+              <div class="value" id="d-stake">—</div>
+            </div>
+            <div>
+              <div class="label">Authority</div>
+              <div class="value" id="d-authority">—</div>
+            </div>
+          </div>
+          <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <h3>Deposit stake (USDC smallest unit)</h3>
+            <div class="field"><label>Amount</label><input id="stake-amount" type="number" placeholder="1000000" /></div>
+            <button onclick="doDeposit()">Deposit</button>
+            <div id="stake-status" class="status-msg"></div>
+          </div>
+        </div>
+
+        <!-- Trading account -->
+        <div class="panel">
+          <h2>Trading account</h2>
+          <div class="row">
+            <div class="label">Status:</div>
+            <div id="d-trading-status">unlinked</div>
+          </div>
+          <div id="trading-account-id" style="font-size: 11px; color: var(--muted);"></div>
+          <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <h3>Link Alpaca paper account</h3>
+            <div class="field">
+              <label>Provider</label>
+              <select id="trading-provider">
+                <option value="alpaca_rest">alpaca_rest (paper, REST)</option>
+                <option value="alpaca_mcp">alpaca_mcp (v0.2 — not yet)</option>
+              </select>
+            </div>
+            <div class="field"><label>API key</label><input id="trading-api-key" /></div>
+            <div class="field"><label>Secret key</label><input id="trading-secret-key" type="password" /></div>
+            <button onclick="doLinkTrading()">Link account</button>
+            <div id="trading-status-msg" class="status-msg"></div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="panel">
+          <h2>Notifications</h2>
+          <div class="field">
+            <label>Channel</label>
+            <select id="notif-channel">
+              <option value="console">console (default)</option>
+              <option value="webhook">webhook</option>
+              <option value="telegram">telegram</option>
+            </select>
+          </div>
+          <div class="field"><label>Destination (URL or chat id)</label><input id="notif-destination" /></div>
+          <button onclick="doSetNotif()">Save preference</button>
+          <div id="notif-status" class="status-msg"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Recent paper trades</h2>
+          <button onclick="doResolveTrades()">Resolve open trades now</button>
+        </div>
+        <div id="trades-list"></div>
+        <div id="resolve-status" class="status-msg"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Recent audit feed</h2>
+        <div id="audit-feed"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Execute paper trade (manual demo)</h2>
+        <div class="grid">
+          <div class="field">
+            <label>Agent</label>
+            <select id="trade-agent"></select>
+          </div>
+          <div class="field"><label>Symbol</label><input id="trade-symbol" placeholder="AAPL" /></div>
+          <div class="field"><label>Qty</label><input id="trade-qty" type="number" placeholder="1" /></div>
+          <div class="field">
+            <label>Side</label>
+            <select id="trade-side"><option value="buy">buy</option><option value="sell">sell</option></select>
+          </div>
+          <div class="field"><label>Rationale</label><input id="trade-rationale" placeholder="why" /></div>
+        </div>
+        <button class="primary" onclick="doExecuteTrade()">Execute trade</button>
+        <div id="trade-exec-status" class="status-msg"></div>
+      </div>
+
+      <div style="font-size: 10px; color: var(--muted); margin-top: 18px;">
+        polling /api/v1/builder/dashboard every 5s
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = (function(){
+      // Allow override via ?api=https://… for local testing.
+      const u = new URL(location.href);
+      return u.searchParams.get('api') || 'https://repid-engine-production.up.railway.app';
+    })();
+
+    const TOKEN_KEY = 'trustrepid.full_account.token';
+    const BUILDER_KEY = 'trustrepid.full_account.builder_id';
+
+    function token() { return localStorage.getItem(TOKEN_KEY); }
+    function builderId() { return localStorage.getItem(BUILDER_KEY); }
+
+    function authHeaders() { return { 'Authorization': 'Bearer ' + (token() || '') }; }
+
+    function setStatus(id, msg, cls) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg || '';
+      el.className = 'status-msg' + (cls ? ' ' + cls : '');
+    }
+
+    async function postJson(path, body, withAuth) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (withAuth) Object.assign(headers, authHeaders());
+      const r = await fetch(API_BASE + path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
+      const j = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, json: j };
+    }
+    async function getJson(path, withAuth) {
+      const headers = {};
+      if (withAuth) Object.assign(headers, authHeaders());
+      const r = await fetch(API_BASE + path, { headers });
+      const j = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, json: j };
+    }
+
+    // --- Auth ---
+    async function doSignup() {
+      setStatus('signup-status', 'creating account…');
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const r = await postJson('/api/v1/builder/full-signup', { email, password });
+      if (!r.ok) { setStatus('signup-status', r.json.error || 'signup failed', 'bad'); return; }
+      localStorage.setItem(TOKEN_KEY, r.json.login_token);
+      localStorage.setItem(BUILDER_KEY, r.json.builder_id);
+      setStatus('signup-status', 'account created — loading dashboard', 'ok');
+      enterDashboard();
+    }
+
+    async function doLogin() {
+      setStatus('login-status', 'signing in…');
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const r = await postJson('/api/v1/builder/login', { email, password });
+      if (!r.ok) { setStatus('login-status', r.json.error || 'login failed', 'bad'); return; }
+      localStorage.setItem(TOKEN_KEY, r.json.login_token);
+      localStorage.setItem(BUILDER_KEY, r.json.builder_id);
+      setStatus('login-status', 'signed in', 'ok');
+      enterDashboard();
+    }
+
+    function logout() {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(BUILDER_KEY);
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('login-view').classList.remove('hidden');
+      stopPolling();
+    }
+
+    // --- Dashboard ---
+    let pollHandle = null;
+    function enterDashboard() {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.remove('hidden');
+      refreshDashboard();
+      if (pollHandle) clearInterval(pollHandle);
+      pollHandle = setInterval(refreshDashboard, 5000);
+    }
+    function stopPolling() { if (pollHandle) { clearInterval(pollHandle); pollHandle = null; } }
+
+    async function refreshDashboard() {
+      const id = builderId();
+      if (!id) return;
+      const r = await getJson('/api/v1/builder/dashboard/' + id, true);
+      if (!r.ok) {
+        if (r.status === 401) logout();
+        return;
+      }
+      renderDashboard(r.json);
+    }
+
+    function renderDashboard(d) {
+      document.getElementById('d-email').textContent = d.builder.email || '(no email)';
+      document.getElementById('d-address').textContent = d.builder.address;
+      document.getElementById('d-repid').textContent = d.builder.current_repid;
+      const erc = d.builder.erc7231_token_id;
+      if (erc) {
+        const isSim = String(erc).startsWith('sim_');
+        document.getElementById('d-erc7231').innerHTML = '<span style="font-size: 12px;">' + erc + '</span>'
+          + '<span class="badge ' + (isSim ? 'sim' : 'real') + '">' + (isSim ? 'simulated' : 'real') + '</span>';
+        document.getElementById('mint-btn').disabled = true;
+      } else {
+        document.getElementById('d-erc7231').textContent = 'not minted';
+        document.getElementById('mint-btn').disabled = false;
+      }
+
+      document.getElementById('d-stake').innerHTML = d.stake.total
+        + '<span class="badge ' + (d.stake.is_simulated ? 'sim' : 'real') + '">' + (d.stake.is_simulated ? 'simulated' : 'real') + '</span>';
+      document.getElementById('d-authority').textContent = d.authority.current;
+
+      // Trading
+      if (d.trading.linked) {
+        document.getElementById('d-trading-status').innerHTML = 'linked (' + d.trading.provider + ')';
+        document.getElementById('trading-account-id').textContent = 'account: ' + (d.trading.account_id || '—');
+      } else {
+        document.getElementById('d-trading-status').textContent = 'unlinked';
+        document.getElementById('trading-account-id').textContent = '';
+      }
+
+      // Agents
+      const agentsList = document.getElementById('agents-list');
+      const tradeAgent = document.getElementById('trade-agent');
+      const prevSelected = tradeAgent.value;
+      agentsList.innerHTML = '';
+      tradeAgent.innerHTML = '';
+      for (const a of d.agents) {
+        const cap = d.cap_progression[a.id] || 50;
+        const card = document.createElement('div');
+        card.className = 'agent-card';
+        card.innerHTML = '<div class="head"><div class="name">' + escapeHtml(a.name) + '</div>'
+          + '<div style="font-size: 11px; color: var(--muted);">RepID ' + a.current_repid + '</div></div>'
+          + '<div class="stats">W ' + a.wisdom_score + ' · C ' + a.character_score
+          + ' · ' + a.recent_trades_count + ' trades · cap ' + cap + '%</div>';
+        agentsList.appendChild(card);
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name + ' (' + a.id.slice(0,8) + ')';
+        tradeAgent.appendChild(opt);
+      }
+      if (d.agents.length === 0) {
+        agentsList.innerHTML = '<div style="font-size: 11px; color: var(--muted);">no agents yet — create one below</div>';
+      }
+      if (prevSelected) tradeAgent.value = prevSelected;
+
+      // Trades
+      const trades = document.getElementById('trades-list');
+      trades.innerHTML = '';
+      for (const t of d.recent_trades) {
+        const cls = t.pnl !== null && t.pnl > 0 ? 'win' : t.pnl !== null && t.pnl < 0 ? 'loss' : '';
+        const row = document.createElement('div');
+        row.className = 'trade-row ' + cls;
+        const pnlStr = t.pnl !== null ? (t.pnl > 0 ? '+' : '') + t.pnl.toFixed(2) : '—';
+        row.innerHTML = '<div>' + escapeHtml(t.side.toUpperCase()) + ' ' + escapeHtml(t.symbol) + ' × ' + t.qty + '</div>'
+          + '<div>' + escapeHtml(t.status) + ' · pnl ' + pnlStr + '</div>';
+        trades.appendChild(row);
+      }
+      if (d.recent_trades.length === 0) {
+        trades.innerHTML = '<div style="font-size: 11px; color: var(--muted);">no trades yet</div>';
+      }
+
+      // Audit
+      const audit = document.getElementById('audit-feed');
+      audit.innerHTML = '';
+      for (const a of d.recent_audit) {
+        const row = document.createElement('div');
+        row.className = 'audit-row';
+        const ev = (a.payload && a.payload.event_type) || a.source_table;
+        row.innerHTML = '<span class="ev">' + escapeHtml(ev) + '</span>'
+          + ' <span style="color: var(--muted);">id=' + a.id + '</span>'
+          + '<span class="ts">' + new Date(a.created_at).toLocaleTimeString() + '</span>';
+        audit.appendChild(row);
+      }
+      if (d.recent_audit.length === 0) {
+        audit.innerHTML = '<div style="font-size: 11px; color: var(--muted);">no audit events for this builder yet</div>';
+      }
+    }
+
+    // --- Actions ---
+    async function doMint() {
+      setStatus('mint-status', 'minting…');
+      const r = await postJson('/api/v1/builder/mint-erc7231', {}, true);
+      if (!r.ok) { setStatus('mint-status', r.json.error || 'mint failed', 'bad'); return; }
+      const tag = r.json.is_simulated ? '(simulated)' : '(real, tx ' + (r.json.tx_hash || '') + ')';
+      setStatus('mint-status', 'minted: ' + r.json.erc7231_token_id + ' ' + tag, 'ok');
+      refreshDashboard();
+    }
+
+    async function doCreateAgent() {
+      setStatus('agent-status', 'creating agent…');
+      const agent_name = document.getElementById('new-agent-name').value.trim();
+      const agent_role = document.getElementById('new-agent-role').value.trim();
+      const r = await postJson('/api/v1/builder/create-agent', { agent_name, agent_role }, true);
+      if (!r.ok) { setStatus('agent-status', r.json.error || 'create failed', 'bad'); return; }
+      setStatus('agent-status', 'created agent ' + r.json.agent_id, 'ok');
+      document.getElementById('new-agent-name').value = '';
+      document.getElementById('new-agent-role').value = '';
+      refreshDashboard();
+    }
+
+    async function doDeposit() {
+      setStatus('stake-status', 'depositing…');
+      const amount = document.getElementById('stake-amount').value;
+      // Use the existing /stake/deposit (public) — but it needs builder_address.
+      // Easiest path: pull our address from the dashboard cache.
+      const id = builderId();
+      const dr = await getJson('/api/v1/builder/dashboard/' + id, true);
+      if (!dr.ok) { setStatus('stake-status', 'cannot fetch builder address', 'bad'); return; }
+      const addr = dr.json.builder.address;
+      const r = await postJson('/api/v1/stake/deposit', { builder_address: addr, amount }, false);
+      if (!r.ok) { setStatus('stake-status', r.json.error || 'deposit failed', 'bad'); return; }
+      setStatus('stake-status', 'deposited: total ' + r.json.total_active_stake + ' authority ' + r.json.authority_after, 'ok');
+      refreshDashboard();
+    }
+
+    async function doLinkTrading() {
+      setStatus('trading-status-msg', 'validating credentials…');
+      const provider = document.getElementById('trading-provider').value;
+      const api_key = document.getElementById('trading-api-key').value.trim();
+      const secret_key = document.getElementById('trading-secret-key').value.trim();
+      const r = await postJson('/api/v1/builder/link-trading-account', { provider, api_key, secret_key }, true);
+      if (!r.ok) { setStatus('trading-status-msg', r.json.error || 'link failed', 'bad'); return; }
+      setStatus('trading-status-msg', 'linked: account ' + (r.json.account_id || '?') + ' buying_power ' + (r.json.buying_power || '?'), 'ok');
+      refreshDashboard();
+    }
+
+    async function doSetNotif() {
+      setStatus('notif-status', 'saving…');
+      const channel = document.getElementById('notif-channel').value;
+      const destination = document.getElementById('notif-destination').value.trim();
+      const r = await postJson('/api/v1/builder/set-notification-pref', { channel, destination }, true);
+      if (!r.ok) { setStatus('notif-status', r.json.error || 'save failed', 'bad'); return; }
+      setStatus('notif-status', 'saved: ' + channel, 'ok');
+    }
+
+    async function doExecuteTrade() {
+      setStatus('trade-exec-status', 'placing trade…');
+      const agent_id = document.getElementById('trade-agent').value;
+      const symbol = document.getElementById('trade-symbol').value.trim();
+      const qty = Number(document.getElementById('trade-qty').value);
+      const side = document.getElementById('trade-side').value;
+      const rationale = document.getElementById('trade-rationale').value.trim();
+      const r = await postJson('/api/v1/agent/execute-paper-trade', { agent_id, symbol, qty, side, rationale }, true);
+      if (!r.ok) { setStatus('trade-exec-status', r.json.error || 'trade failed', 'bad'); return; }
+      setStatus('trade-exec-status', 'placed order ' + r.json.order_id + ' (bet ' + r.json.linked_bet_id + ')', 'ok');
+      refreshDashboard();
+    }
+
+    async function doResolveTrades() {
+      setStatus('resolve-status', 'resolving open trades…');
+      const r = await postJson('/api/v1/builder/resolve-paper-trades', { force: true }, true);
+      if (!r.ok) { setStatus('resolve-status', (r.json && r.json.error) || 'resolve failed', 'bad'); return; }
+      setStatus('resolve-status', 'inspected ' + r.json.inspected + ' · resolved ' + r.json.resolved, 'ok');
+      refreshDashboard();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // Bootstrap
+    if (token() && builderId()) {
+      enterDashboard();
+    }
+  </script>
+</body>
+</html>
