@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reponomics — two-builder demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; --w:#fda4af; --m:#86efac; }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:1200px;margin:0 auto;padding:20px 16px}
+  h1{margin:0 0 4px;font-size:22px}
+  .lede{color:var(--muted);margin:0 0 16px;font-size:13px}
+  .api-bar{display:flex;gap:8px;margin-bottom:16px;padding:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;align-items:center;font-size:13px}
+  .api-bar input{flex:1;background:#0a0e23;color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-family:ui-monospace,monospace;font-size:12px}
+  button{background:var(--accent);color:#0a0e23;border:0;border-radius:5px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+  button:hover{background:#4cd7a3}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+  .card h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .card.w h2{color:var(--w)}
+  .card.m h2{color:var(--m)}
+  .row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px;border-bottom:1px dashed rgba(255,255,255,0.05)}
+  .row:last-child{border-bottom:0}
+  .row .k{color:var(--muted)}
+  .row .v{font-family:ui-monospace,monospace;color:var(--text)}
+  .row .v.big{font-size:16px;font-weight:600;color:var(--accent)}
+  .agents{margin-top:10px}
+  .agent{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--muted)}
+  .agent.ghost{opacity:.4;text-decoration:line-through}
+  .agent .repid{font-family:ui-monospace,monospace;color:var(--text)}
+  .crossover{margin-top:16px;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;text-align:center}
+  .crossover.flipped{border-color:var(--m);background:rgba(110,231,183,0.05)}
+  .crossover .label{color:var(--muted);font-size:13px;margin-bottom:6px}
+  .crossover .verdict{font-size:18px;font-weight:600}
+  .crossover .verdict.flipped{color:var(--m)}
+  canvas{width:100%;max-width:100%;height:auto;background:#0a0e23;border:1px solid var(--border);border-radius:8px;margin-top:10px}
+  .errbar{background:rgba(248,113,113,0.1);color:var(--bad);padding:10px;border:1px solid var(--bad);border-radius:6px;margin-bottom:12px;display:none}
+  .pill{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;background:rgba(250,204,21,0.15);color:var(--warn)}
+  a{color:var(--link)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Reponomics two-builder demo <span class="pill">SIMULATED</span></h1>
+<p class="lede">
+  Live snapshot from <code>/api/v1/demo/two-builder/snapshot</code>.
+  Builder W ($1000 stake, 5 sybil agents) vs Builder M ($50 stake,
+  owns APM). Authority = √stake × R × W × C / 1e7. Crossover happens
+  when M's mission alignment beats W's capital.
+</p>
+
+<div class="api-bar">
+  <span style="color:var(--muted)">Endpoint:</span>
+  <input id="api" value="https://repid-engine-production.up.railway.app">
+  <button id="btn-refresh">Refresh</button>
+  <button id="btn-bootstrap">Bootstrap snapshot</button>
+</div>
+
+<div id="errbar" class="errbar"></div>
+
+<div class="grid">
+  <div class="card w" id="card-w">
+    <h2>Builder W <span style="color:var(--muted);font-size:12px;font-weight:normal">(wealthy operator)</span></h2>
+    <div class="row"><span class="k">stake</span><span class="v" id="w-stake">—</span></div>
+    <div class="row"><span class="k">builder repid</span><span class="v" id="w-repid">—</span></div>
+    <div class="row"><span class="k">ghost cohort</span><span class="v" id="w-ghosts">—</span></div>
+    <div class="row"><span class="k">authority</span><span class="v big" id="w-auth">—</span></div>
+    <div class="agents" id="w-agents"></div>
+  </div>
+  <div class="card m" id="card-m">
+    <h2>Builder M <span style="color:var(--muted);font-size:12px;font-weight:normal">(mission builder)</span></h2>
+    <div class="row"><span class="k">stake</span><span class="v" id="m-stake">—</span></div>
+    <div class="row"><span class="k">builder repid</span><span class="v" id="m-repid">—</span></div>
+    <div class="row"><span class="k">ghost cohort</span><span class="v" id="m-ghosts">—</span></div>
+    <div class="row"><span class="k">authority</span><span class="v big" id="m-auth">—</span></div>
+    <div class="agents" id="m-agents"></div>
+  </div>
+</div>
+
+<div class="crossover" id="crossover">
+  <div class="label">Crossover state</div>
+  <div class="verdict" id="crossover-verdict">…</div>
+</div>
+
+<h3 style="margin:24px 0 6px;font-size:15px">Authority over time</h3>
+<canvas id="chart" height="240"></canvas>
+
+<p style="color:var(--muted);font-size:12px;margin-top:24px">
+  <a href="/demo-tour-v2/">← demo tour</a> · <a href="/reponomics-explainer/">why?</a> ·
+  Auto-refresh every 30s. Every value here resolves to a row in
+  <code>stake_authority_snapshots</code> and <code>hal_audit_chain</code>.
+</p>
+
+</div>
+
+<script>
+const apiInput = document.getElementById('api');
+const errbar = document.getElementById('errbar');
+function api(p){return apiInput.value.replace(/\/$/,'') + p;}
+function fmtUSDC(s){if(!s)return '—'; const n=BigInt(s); const whole=n/1000000n; const frac=(n%1000000n).toString().padStart(6,'0').slice(0,2); return '$'+whole.toString()+'.'+frac;}
+function fmtBig(s){if(!s)return '—'; return BigInt(s).toLocaleString();}
+
+function renderBuilder(prefix, b){
+  if(!b){return;}
+  document.getElementById(prefix+'-stake').textContent = fmtUSDC(b.stake_total);
+  document.getElementById(prefix+'-repid').textContent = b.current_repid;
+  document.getElementById(prefix+'-ghosts').textContent = b.ghost_cohort_count;
+  document.getElementById(prefix+'-auth').textContent = fmtBig(b.authority);
+  const ag = document.getElementById(prefix+'-agents');
+  ag.innerHTML = (b.agents||[]).map(a=>`<div class="agent ${a.is_ghost?'ghost':''}"><span>${a.name}</span><span class="repid">R ${a.current_repid} · W ${a.wisdom_score} · C ${a.character_score}</span></div>`).join('');
+}
+
+async function refresh(){
+  errbar.style.display='none';
+  try {
+    const r = await fetch(api('/api/v1/demo/two-builder/snapshot'));
+    if(!r.ok) throw new Error(r.statusText);
+    const j = await r.json();
+    renderBuilder('w', j.builder_w);
+    renderBuilder('m', j.builder_m);
+    const flipped = j.crossover?.builder_m_authority_exceeds_w;
+    const verdict = document.getElementById('crossover-verdict');
+    verdict.textContent = flipped
+      ? 'Builder M authority > Builder W — mission outperforms capital'
+      : 'Builder W still ahead';
+    verdict.className = 'verdict ' + (flipped?'flipped':'');
+    document.getElementById('crossover').className = 'crossover ' + (flipped?'flipped':'');
+    await renderChart();
+  } catch(e){
+    errbar.style.display='block';
+    errbar.textContent = 'Refresh failed: ' + e.message;
+  }
+}
+
+async function bootstrap(){
+  await fetch(api('/api/v1/demo/two-builder/bootstrap'), {method:'POST'});
+  await refresh();
+}
+
+async function renderChart(){
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const r = await fetch(api('/api/v1/demo/two-builder/timeseries?limit=80'));
+  if(!r.ok) return;
+  const j = await r.json();
+  const pts = j.points || [];
+  const w = canvas.width = canvas.clientWidth;
+  const h = 240;
+  ctx.fillStyle = '#0a0e23'; ctx.fillRect(0,0,w,h);
+  if(pts.length < 2){
+    ctx.fillStyle = '#8c97c4'; ctx.font = '12px system-ui';
+    ctx.fillText('not enough data — click Bootstrap snapshot', 12, 28);
+    return;
+  }
+  const wAuths = pts.map(p=>Number(p.builder_w_authority));
+  const mAuths = pts.map(p=>Number(p.builder_m_authority));
+  const max = Math.max(...wAuths, ...mAuths) * 1.1 || 1;
+  function plot(arr, color){
+    ctx.beginPath();
+    arr.forEach((v,i)=>{
+      const x = (i/(arr.length-1))*w;
+      const y = h - (v/max)*(h-20) - 10;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+  }
+  plot(wAuths, '#fda4af');
+  plot(mAuths, '#86efac');
+  ctx.fillStyle = '#fda4af'; ctx.fillRect(12, 12, 14, 6); ctx.fillStyle = '#e6ecff'; ctx.font='11px system-ui'; ctx.fillText('Builder W', 30, 18);
+  ctx.fillStyle = '#86efac'; ctx.fillRect(110, 12, 14, 6); ctx.fillStyle = '#e6ecff'; ctx.fillText('Builder M', 128, 18);
+}
+
+document.getElementById('btn-refresh').addEventListener('click', refresh);
+document.getElementById('btn-bootstrap').addEventListener('click', bootstrap);
+refresh();
+setInterval(refresh, 30000);
+</script>
+
+</body>
+</html>

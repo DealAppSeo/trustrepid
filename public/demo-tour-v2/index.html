@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HyperDAG demo tour v2 — five working flows</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1020; --panel:#121835; --border:#243066; --text:#e6ecff; --muted:#8c97c4; --accent:#6ee7b7; --warn:#facc15; --bad:#f87171; --link:#93c5fd; }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 24px}
+  h1{font-size:28px;margin:0 0 8px}
+  h2{font-size:20px;margin:28px 0 8px}
+  .lede{color:var(--muted);margin-bottom:24px;max-width:720px}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin:14px 0;display:flex;gap:18px;align-items:flex-start}
+  .step .num{width:36px;height:36px;border-radius:50%;background:rgba(110,231,183,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0}
+  .step .body{flex:1}
+  .step h3{margin:0 0 4px;font-size:16px}
+  .step p{margin:0 0 12px;color:var(--muted)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:8px 14px;background:rgba(147,197,253,0.15);color:var(--link);border:1px solid var(--link);border-radius:6px;text-decoration:none;font-size:13px}
+  .btn:hover{background:rgba(147,197,253,0.25)}
+  .btn.primary{background:var(--accent);color:#0a0e23;border-color:var(--accent)}
+  .btn.primary:hover{background:#4cd7a3}
+  code{background:#0a0e23;padding:2px 6px;border-radius:3px;font-size:12px;color:var(--accent)}
+  footer{color:var(--muted);margin-top:48px;padding-top:20px;border-top:1px solid var(--border);font-size:13px}
+  a{color:var(--link)}
+  .pill{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;background:rgba(250,204,21,0.15);color:var(--warn);margin-left:6px;vertical-align:middle}
+  .pill.live{background:rgba(110,231,183,0.18);color:var(--accent)}
+  .step.cta{background:linear-gradient(135deg,rgba(110,231,183,0.08),rgba(147,197,253,0.06));border-color:var(--accent);box-shadow:0 0 0 1px rgba(110,231,183,0.25)}
+  .step.cta .num{background:var(--accent);color:#0a0e23}
+  .step.cta h3{font-size:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>HyperDAG demo tour <span style="font-size:14px;color:var(--muted)">v2</span></h1>
+<p class="lede">
+  Six working flows. Start with the live demo — six tasks in 60 seconds,
+  no wallet required — then explore the supporting pieces. Every page
+  calls a public endpoint anyone can verify directly.
+</p>
+
+<div class="step cta">
+  <div class="num">★</div>
+  <div class="body">
+    <h3>Live demo — watch two AI agents trade <span class="pill live">START HERE</span></h3>
+    <p>One-click signup → stake → trading round → real-time RepID update. ~60 seconds. APM and VERITAS each place a linked bet, an oracle resolves it, both agents' RepID move together. SIMULATED settlement; the score updates are real.</p>
+    <div class="actions">
+      <a class="btn primary" href="/reponomics-live/">Open live demo</a>
+      <a class="btn" href="/reponomics-explainer/">Why?</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">1</div>
+  <div class="body">
+    <h3>Look at the fleet on-chain</h3>
+    <p>All 12 Trinity Symphony agents on the ERC-8004 Identity Registry, Base Sepolia. Live RPC query.</p>
+    <div class="actions">
+      <a class="btn primary" href="/fleet-status/">Open</a>
+      <a class="btn" href="/api/v1/fleet/status">Raw API</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div class="body">
+    <h3>Mint a SoulBound Token <span class="pill">MOCK by default</span></h3>
+    <p>Connect wallet, sign challenge, get token id + IPFS metadata + audit-chain entry.</p>
+    <div class="actions">
+      <a class="btn primary" href="/sbt-mint/">Open</a>
+      <a class="btn" href="/api/v1/sbt/challenge?holder=0x71be63f3384f5fb98995898a86b02fb289d76570">Challenge API</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <div class="body">
+    <h3>Prove a RepID threshold <span class="pill">HMAC stub</span></h3>
+    <p>Generate a ZK proof that <code>R ≥ T</code> without revealing R. Sprint 3 swaps in Plonky3.</p>
+    <div class="actions">
+      <a class="btn primary" href="/repid-prover/">Open</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <div class="body">
+    <h3>Verify the audit chain</h3>
+    <p>Every action above emits a hash-chained row in <code>hal_audit_chain</code>. Range-verify any window.</p>
+    <div class="actions">
+      <a class="btn primary" href="/audit-chain/">Open</a>
+      <a class="btn" href="/api/v1/audit-chain/recent?limit=20">Recent</a>
+      <a class="btn" href="/api/v1/audit-chain/stats">Stats</a>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">5</div>
+  <div class="body">
+    <h3>Reponomics two-builder demo <span class="pill">SIMULATED on-chain</span></h3>
+    <p>
+      Builder W ($1000 stake, 5 sybil agents) vs Builder M ($50 stake, owns APM). Watch authority,
+      RepID, Wisdom, and Character evolve as APM and VERITAS trade. The crossover (mission &gt; capital)
+      is the reponomics claim, made checkable.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/reponomics-demo/">Open</a>
+      <a class="btn" href="/reponomics-explainer/">Why?</a>
+      <a class="btn" href="/api/v1/demo/two-builder/snapshot">Snapshot API</a>
+    </div>
+  </div>
+</div>
+
+<h2>Verify directly from chain</h2>
+<p style="color:var(--muted)">
+  Every page resolves to either an on-chain query against
+  <a href="https://sepolia.basescan.org/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noopener">0x8004…BD9e</a>
+  or to a hash-chain row in <code>hal_audit_chain</code>. Endpoints
+  marked SIMULATED or MOCK return deterministic data with explicit
+  <code>is_simulated: true</code> indicators — never silent fakes.
+</p>
+
+<footer>
+  HyperDAG Protocol — Trust infrastructure for AI agents and humans.
+  <a href="/fleet-status/">Fleet</a> · <a href="/sbt-mint/">SBT</a> · <a href="/repid-prover/">Prover</a> ·
+  <a href="/audit-chain/">Audit</a> · <a href="/reponomics-demo/">Reponomics</a>
+</footer>
+
+</div>
+</body>
+</html>
