@@ -26,6 +26,10 @@
   footer{color:var(--muted);margin-top:48px;padding-top:20px;border-top:1px solid var(--border);font-size:13px}
   a{color:var(--link)}
   .pill{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;background:rgba(250,204,21,0.15);color:var(--warn);margin-left:6px;vertical-align:middle}
+  .pill.live{background:rgba(110,231,183,0.18);color:var(--accent)}
+  .step.cta{background:linear-gradient(135deg,rgba(110,231,183,0.08),rgba(147,197,253,0.06));border-color:var(--accent);box-shadow:0 0 0 1px rgba(110,231,183,0.25)}
+  .step.cta .num{background:var(--accent);color:#0a0e23}
+  .step.cta h3{font-size:18px}
 </style>
 </head>
 <body>
@@ -33,10 +37,22 @@
 
 <h1>HyperDAG demo tour <span style="font-size:14px;color:var(--muted)">v2</span></h1>
 <p class="lede">
-  Five working flows. Each has a public endpoint anyone can hit and a
-  page that calls it. Marco / Vitto / Leonard / public devs can verify
-  every link below by reading the API response or the on-chain state.
+  Six working flows. Start with the live demo — six tasks in 60 seconds,
+  no wallet required — then explore the supporting pieces. Every page
+  calls a public endpoint anyone can verify directly.
 </p>
+
+<div class="step cta">
+  <div class="num">★</div>
+  <div class="body">
+    <h3>Live demo — watch two AI agents trade <span class="pill live">START HERE</span></h3>
+    <p>One-click signup → stake → trading round → real-time RepID update. ~60 seconds. APM and VERITAS each place a linked bet, an oracle resolves it, both agents' RepID move together. SIMULATED settlement; the score updates are real.</p>
+    <div class="actions">
+      <a class="btn primary" href="/reponomics-live/">Open live demo</a>
+      <a class="btn" href="/reponomics-explainer/">Why?</a>
+    </div>
+  </div>
+</div>
 
 <div class="step">
   <div class="num">1</div>
