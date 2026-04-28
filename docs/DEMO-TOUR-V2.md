@@ -1,8 +1,9 @@
-# Demo tour v2 — the five working flows
+# Demo tour v2 — the six working flows
 
-This is the consolidated entry doc for evaluators. Five demo pages,
+This is the consolidated entry doc for evaluators. Six demo pages,
 each backed by a real public endpoint, each with a curl command anyone
-can run independently.
+can run independently. Start with the live demo — six tasks in 60
+seconds, no wallet — then explore the supporting pieces.
 
 ---
 
@@ -10,6 +11,7 @@ can run independently.
 
 | Tile | Page |
 |---|---|
+| ★ Live demo (start here) | `/reponomics-live/` |
 | 1. Fleet status | `/fleet-status/` |
 | 2. SBT mint | `/sbt-mint/` |
 | 3. RepID prover | `/repid-prover/` |
@@ -18,8 +20,9 @@ can run independently.
 | Tour landing | `/demo-tour-v2/` |
 
 The reponomics tour is paired with `/reponomics-explainer/` (5-section
-walkthrough) and the model doc `docs/REPONOMICS-MODEL.md` for evaluators
-who want the full math.
+walkthrough), the live demo page (`/reponomics-live/`), and the model
+docs `docs/REPONOMICS-MODEL.md` + `docs/REPONOMICS-LIVE-DEMO.md` for
+evaluators who want the full math + architecture.
 
 ## Curl examples
 
