@@ -9,6 +9,63 @@
 
 ---
 
+## Try it live
+
+| Surface | URL | What it shows |
+|---|---|---|
+| **No-wallet visitor demo** | [trustrepid.dev/reponomics-live/](https://trustrepid.dev/reponomics-live/) | Get a `0xdead0e707…` builder address, deposit stake, run an APM/VERITAS round, watch RepID move — all without a wallet. 60-second flow. |
+| **Builder dashboard (full account)** | [trustrepid.dev/builder-dashboard/](https://trustrepid.dev/builder-dashboard/) | Email + password signup, mint ERC-7231, link an Alpaca paper account, fire a paper trade, see authority + character + wisdom move. |
+| **Two-builder snapshot (live data)** | [repid-engine-production.up.railway.app/api/v1/demo/two-builder/snapshot](https://repid-engine-production.up.railway.app/api/v1/demo/two-builder/snapshot) | Public JSON of Builder W (above floor, real authority) and Builder M (below floor, authority = 0). |
+| **Public metrics** | [repid-engine-production.up.railway.app/api/v1/metrics](https://repid-engine-production.up.railway.app/api/v1/metrics) | Live agent count, VDR, hallucination catches, on-chain contract addresses. |
+
+## Architecture (text view)
+
+```
+                     ┌─────────────────────────────────┐
+                     │   trustrepid.dev (Next.js)      │
+                     │   /reponomics-live/  ← visitors │
+                     │   /builder-dashboard ← accounts │
+                     └────────────────┬────────────────┘
+                                      │ HTTPS
+                                      ▼
+            ┌──────────────────────────────────────────────────┐
+            │  repid-engine (Express, Railway)                 │
+            │                                                  │
+            │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
+            │  │  Builder /  │ │  Stake /    │ │  Trader /   │ │
+            │  │  Token /    │ │  Authority  │ │  APM &      │ │
+            │  │  JWT auth   │ │  (sqrt math)│ │  VERITAS    │ │
+            │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ │
+            │         └────────┬──────┴───────┬───────┘        │
+            │                  ▼              ▼                │
+            │          ┌──────────────┐  ┌──────────────┐      │
+            │          │  Plonky3     │  │ ERC-8004     │      │
+            │          │  prover (Rust│  │ canonical    │      │
+            │          │  + HMAC      │  │ writer       │      │
+            │          │  fallback)   │  │ (ChaosChain) │      │
+            │          └──────┬───────┘  └──────┬───────┘      │
+            └─────────────────┼─────────────────┼──────────────┘
+                              ▼                 ▼
+                  ┌──────────────────┐ ┌──────────────────┐
+                  │   Supabase       │ │  Base Sepolia    │
+                  │   (Postgres,     │ │  (oracle,        │
+                  │    audit chain)  │ │   identity reg)  │
+                  └──────────────────┘ └──────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │  Telegram alerts │
+                    │  (HAEE, daily,   │
+                    │   stalled tasks) │
+                    └──────────────────┘
+```
+
+The agent-trader path also reaches out to **paper-api.alpaca.markets** for the
+paper-trade execution leg of full-account builders. See
+[`repid-engine/docs/TRADING-BRIDGE-ARCHITECTURE.md`](https://github.com/DealAppSeo/repid-engine/blob/main/docs/TRADING-BRIDGE-ARCHITECTURE.md).
+
+---
+
 ## What TrustRepID Builds
 
 TrustRepID is the **agent-facing dashboard, challenge arena, and developer SDK** of the HyperDAG Protocol ecosystem.
