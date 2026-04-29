@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Reponomics live demo — watch two AI agents trade in 60 seconds</title>
+<title>TrustRepID — Your agent shouldn't be trusted. Until it's earned it.</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="One-click live demo: token signup → stake → trading round → real-time RepID update. No wallet required.">
+<meta name="description" content="Reputation infrastructure for AI agents. Real performance. On-chain receipts. As reputation rises, autonomy unlocks. You stay in control.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
 <style>
   :root {
     --bg:#0b1020; --panel:#121835; --border:#243066;
@@ -15,8 +16,13 @@
   *{box-sizing:border-box}
   body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
   .wrap{max-width:760px;margin:0 auto;padding:24px 18px}
-  h1{margin:0 0 4px;font-size:22px}
-  .lede{color:var(--muted);margin:0 0 18px;font-size:13px}
+
+  /* Hero */
+  .hero{padding:28px 0 18px;border-bottom:1px solid var(--border);margin-bottom:22px}
+  .hero h1{margin:0 0 12px;font-size:28px;line-height:1.2;letter-spacing:-0.01em}
+  .hero-sub{color:var(--muted);font-size:14px;margin:0;max-width:620px}
+  @media(max-width:560px){.hero h1{font-size:22px}}
+
   .api-bar{display:flex;gap:8px;margin-bottom:14px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:6px;align-items:center;font-size:12px}
   .api-bar input{flex:1;background:#0a0e23;color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:ui-monospace,monospace;font-size:11px}
 
@@ -41,7 +47,11 @@
 
   .out{margin-top:8px}
 
-  .pill{display:inline-block;padding:1px 6px;border-radius:999px;font-size:10px;background:rgba(250,204,21,0.15);color:var(--warn);margin-left:6px;vertical-align:middle}
+  /* Bet input */
+  .bet-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:#0a0e23;border:1px solid var(--border);border-radius:6px;flex-wrap:wrap}
+  .bet-input-row label{color:var(--muted);font-size:12px}
+  .bet-input-row input{background:#0b1020;color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 7px;font-family:ui-monospace,monospace;font-size:12px;width:110px}
+  .bet-suggested{color:var(--muted);font-size:11px;font-style:italic}
 
   /* Step 4 — agents */
   .agents{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
@@ -62,11 +72,27 @@
 
   .errbar{background:rgba(248,113,113,0.1);color:var(--bad);padding:8px 12px;border:1px solid var(--bad);border-radius:6px;margin-bottom:12px;display:none;font-size:12px}
 
-  .share{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
-  .share a{display:inline-block;padding:8px 12px;background:#1da1f2;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600}
-  .share a:hover{background:#1a91da}
+  /* Share card */
+  .share-card{display:none;margin-top:10px;padding:14px;background:linear-gradient(135deg,rgba(110,231,183,0.10),rgba(147,197,253,0.06));border:1px solid var(--accent);border-radius:10px}
+  .share-card.visible{display:block;animation:fadeIn .4s ease-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .share-card-visual{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .share-symbol{font-size:36px;line-height:1}
+  .share-repid-num{font-family:ui-monospace,monospace;font-size:24px;font-weight:700;color:var(--accent)}
+  .share-delta-text{color:var(--m);font-size:13px}
+  .share-buttons{display:flex;gap:10px;flex-wrap:wrap}
+  .share-buttons a, .share-buttons button{display:inline-block;padding:9px 14px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;border:0;cursor:pointer;font-family:inherit}
+  .share-buttons a.x-btn{background:#1da1f2;color:#fff}
+  .share-buttons a.x-btn:hover{background:#1a91da}
+  .share-buttons button{background:var(--panel);border:1px solid var(--link);color:var(--link)}
+  .share-buttons button:hover{background:#1a2147}
+  .share-buttons a.alt-link{background:var(--panel);border:1px solid var(--link);color:var(--link)}
 
   a{color:var(--link)}
+
+  /* Honest footer */
+  .honest-footer{margin-top:24px;padding:10px 0;border-top:1px solid var(--border);color:var(--muted);font-size:11px;text-align:center}
+  .honest-footer .pill{display:inline-block;padding:1px 6px;border-radius:999px;font-size:10px;background:rgba(250,204,21,0.15);color:var(--warn);margin-right:6px}
 
   @media(max-width:560px){.agents{grid-template-columns:1fr}}
 </style>
@@ -74,13 +100,10 @@
 <body>
 <div class="wrap">
 
-<h1>Reponomics live demo <span class="pill">SIMULATED</span></h1>
-<p class="lede">
-  Five buttons. ~60 seconds. No wallet. You'll create a demo token,
-  stake testnet USDC, run a real APM↔VERITAS trading round, and watch
-  RepID update in real time. Every step writes to a hash-chained audit
-  log you can verify.
-</p>
+<header class="hero">
+  <h1>Your agent shouldn't be trusted. Until it's earned it.</h1>
+  <p class="hero-sub">TrustRepID is reputation infrastructure for AI agents. Real performance. On-chain receipts. As reputation rises, autonomy unlocks. You stay in control.</p>
+</header>
 
 <div class="api-bar">
   <span style="color:var(--muted)">API:</span>
@@ -95,7 +118,7 @@
     <span class="step-num">1</span>
     <h3>Create demo token</h3>
   </div>
-  <p class="blurb">Token-only signup — no wallet. RepID rewards disabled until you upgrade with ERC-7231.</p>
+  <p class="blurb">Token-only signup — no wallet. Earned rewards disabled until you upgrade with ERC-7231.</p>
   <button id="btn-token">Create demo token</button>
   <div class="out" id="out-token"></div>
 </div>
@@ -106,7 +129,7 @@
     <span class="step-num">2</span>
     <h3>Stake 100 testnet USDC</h3>
   </div>
-  <p class="blurb">Quadratic stake math: √100 USDC × R × W × C / 1e7 → trading authority.</p>
+  <p class="blurb">Quadratic stake math: √100 USDC × R × W × C / 1e7 → trading limit.</p>
   <button id="btn-stake" disabled>Stake 100 USDC (simulated)</button>
   <div class="out" id="out-stake"></div>
 </div>
@@ -117,7 +140,12 @@
     <span class="step-num">3</span>
     <h3>Run a live trading round</h3>
   </div>
-  <p class="blurb">APM and VERITAS each place a linked bet against an oracle outcome. Atomic settlement: token P&amp;L and RepID move together.</p>
+  <p class="blurb">APM and VERITAS each place a linked bet against an oracle outcome. Atomic settlement: token P&amp;L and reputation move together.</p>
+  <div class="bet-input-row" id="bet-input-row">
+    <label for="bet-amount-input">Bet amount (USDC):</label>
+    <input id="bet-amount-input" type="number" step="0.001" placeholder="0.000" />
+    <span class="bet-suggested" id="bet-suggested"></span>
+  </div>
   <button id="btn-round" disabled>Run round</button>
   <div class="out" id="out-round"></div>
 </div>
@@ -126,9 +154,9 @@
 <div id="step-4" class="step">
   <div class="step-head">
     <span class="step-num">4</span>
-    <h3>Watch RepID update</h3>
+    <h3>Watch reputation update</h3>
   </div>
-  <p class="blurb">Polling /api/v1/demo/two-builder/snapshot every 2s. Green flash = RepID up; red = down.</p>
+  <p class="blurb">Polling every 2s. Green flash = reputation up; red = down.</p>
   <div class="agents" id="agents-grid">
     <div class="agent-card" id="card-apm">
       <div class="name">APM</div>
@@ -150,9 +178,19 @@
     <h3>Share the demo</h3>
   </div>
   <p class="blurb">Two AI agents traded with reputation-staked authority. Tell someone.</p>
-  <div class="share">
-    <a id="share-x" href="#" target="_blank" rel="noopener">Share on X</a>
-    <a href="/reponomics-explainer/" style="background:var(--panel);border:1px solid var(--link);color:var(--link)">How does it work?</a>
+  <div id="share-card" class="share-card">
+    <div class="share-card-visual">
+      <span class="share-symbol">★</span>
+      <div>
+        <div class="share-repid-num" id="share-repid-num">—</div>
+        <div class="share-delta-text" id="share-delta-text">earned +0</div>
+      </div>
+    </div>
+    <div class="share-buttons">
+      <a id="share-x" class="x-btn" href="#" target="_blank" rel="noopener">Share on X</a>
+      <button id="share-copy" type="button">Or copy link</button>
+      <a class="alt-link" href="/reponomics-explainer/">How does it work?</a>
+    </div>
   </div>
 </div>
 
@@ -162,15 +200,16 @@
   <div id="audit-list"><span style="color:var(--muted)">no events yet</span></div>
 </div>
 
-<p style="color:var(--muted);font-size:11px;margin-top:18px">
-  <a href="/demo-tour-v2/">← back to demo tour</a> ·
-  <a href="/reponomics-demo/">two-builder demo</a> ·
-  Every step is verifiable in <code>hal_audit_chain</code>. SIMULATED
-  endpoints return <code>is_simulated: true</code>; never silent fakes.
-</p>
+<footer class="honest-footer">
+  <span class="pill">SIMULATED</span>
+  Live on Base Sepolia testnet · <a href="https://sepolia.basescan.org/" target="_blank" rel="noopener">on-chain receipts</a> ·
+  <a href="/demo-tour-v2/">demo tour</a> ·
+  <a href="/reponomics-demo/">two-builder demo</a>
+</footer>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
 <script>
 const apiInput = document.getElementById('api');
 const errbar = document.getElementById('errbar');
@@ -186,9 +225,18 @@ function activate(n){
   }
 }
 
-let state = { token:null, builderAddress:null, builderId:null, roundId:null };
+const driverFn = (window.driver && window.driver.js && window.driver.js.driver) ? window.driver.js.driver : null;
 
-// Step 1
+let state = {
+  token:null, builderAddress:null, builderId:null, roundId:null,
+  recommendedBetRaw: null, maxSafeBetRaw: null,
+  recommendedBetUsdc: null, authorityUsdc: null,
+  attemptedDeliberateFail: false
+};
+
+function isMobile(){ return window.innerWidth < 600; }
+
+// Step 1 — create demo token
 document.getElementById('btn-token').addEventListener('click', async () => {
   clearErr();
   const btn = document.getElementById('btn-token');
@@ -203,7 +251,7 @@ document.getElementById('btn-token').addEventListener('click', async () => {
     document.getElementById('out-token').innerHTML = `
       <div class="row"><span class="k">token</span><span class="v">${j.token.slice(0,16)}…</span></div>
       <div class="row"><span class="k">builder address</span><span class="v">${j.builder_address}</span></div>
-      <div class="row"><span class="k">repid rewards</span><span class="v">${j.repid_rewards_eligible ? 'eligible' : 'demo-only — mint ERC-7231 to upgrade'}</span></div>
+      <div class="row"><span class="k">rewards</span><span class="v">${j.repid_rewards_eligible ? 'eligible' : 'demo-only — mint ERC-7231 to upgrade'}</span></div>
     `;
     btn.textContent = 'done';
     document.getElementById('btn-stake').disabled = false;
@@ -215,7 +263,7 @@ document.getElementById('btn-token').addEventListener('click', async () => {
   }
 });
 
-// Step 2
+// Step 2 — stake
 document.getElementById('btn-stake').addEventListener('click', async () => {
   clearErr();
   const btn = document.getElementById('btn-stake');
@@ -230,12 +278,13 @@ document.getElementById('btn-stake').addEventListener('click', async () => {
     if(!j.ok) throw new Error(j.error || 'stake deposit failed');
     document.getElementById('out-stake').innerHTML = `
       <div class="row"><span class="k">total active stake</span><span class="v">$${(BigInt(j.total_active_stake)/1000000n).toString()} USDC</span></div>
-      <div class="row"><span class="k">authority after</span><span class="v">${j.authority_after}</span></div>
+      <div class="row"><span class="k">trading limit</span><span class="v">${j.authority_after}</span></div>
       <div class="row"><span class="k">simulated</span><span class="v">${j.is_simulated}</span></div>
     `;
     btn.textContent = 'done';
     document.getElementById('btn-round').disabled = false;
     activate(3);
+    fetchRecommendedBet();
   } catch(e){
     showErr('Step 2 failed: ' + e.message);
     btn.disabled = false;
@@ -243,34 +292,180 @@ document.getElementById('btn-stake').addEventListener('click', async () => {
   }
 });
 
-// Step 3
+// Pull recommended bet from backend after staking
+async function fetchRecommendedBet(){
+  if(!state.token) return;
+  try {
+    const r = await fetch(api('/api/v1/demo/recommended-bet/' + encodeURIComponent(state.token)));
+    if(!r.ok) return;
+    const j = await r.json();
+    if(j.recommended_bet_raw) state.recommendedBetRaw = String(j.recommended_bet_raw);
+    if(j.max_safe_bet_raw) state.maxSafeBetRaw = String(j.max_safe_bet_raw);
+    if(j.recommended_bet_human_usdc) state.recommendedBetUsdc = j.recommended_bet_human_usdc;
+    if(j.authority_human_usdc) state.authorityUsdc = j.authority_human_usdc;
+    if(state.recommendedBetUsdc){
+      document.getElementById('bet-suggested').textContent = `recommended: $${state.recommendedBetUsdc}`;
+    }
+  } catch(e){ /* swallow — backend may not be ready yet */ }
+}
+
+// Step 3 — deliberate-fail flow → recovery → success
 document.getElementById('btn-round').addEventListener('click', async () => {
   clearErr();
   const btn = document.getElementById('btn-round');
+  const betInput = document.getElementById('bet-amount-input');
+
+  let body = {};
+  if(state.maxSafeBetRaw && !state.attemptedDeliberateFail){
+    // Deliberate fail: send max_safe + 100 to provoke BET_EXCEEDS_AUTHORITY
+    body = {
+      bet_amount: (BigInt(state.maxSafeBetRaw) + 100n).toString(),
+      token: state.token
+    };
+    state.attemptedDeliberateFail = true;
+  } else {
+    const human = parseFloat(betInput.value);
+    if(!isNaN(human) && human > 0){
+      body = { bet_amount: String(Math.round(human * 1_000_000)), token: state.token };
+    } else if(state.recommendedBetRaw){
+      body = { bet_amount: state.recommendedBetRaw, token: state.token };
+    }
+  }
+
   btn.disabled = true; btn.textContent = 'running round…';
   try {
-    const r = await fetch(api('/api/v1/demo/run-round-anonymous'), { method:'POST', headers:{ 'content-type':'application/json' }, body:'{}' });
+    const r = await fetch(api('/api/v1/demo/run-round-anonymous'), {
+      method:'POST',
+      headers:{ 'content-type':'application/json' },
+      body: JSON.stringify(body)
+    });
     const j = await r.json();
-    if(!j.ok) throw new Error(j.error || j.notes || 'round runner failed');
+    if(j && j.error === 'BET_EXCEEDS_AUTHORITY'){
+      btn.disabled = false; btn.textContent = 'Run round';
+      handleBetExceedsAuthority(j);
+      return;
+    }
+    if(!r.ok || !j.ok) throw new Error(j.error || j.notes || 'round runner failed');
     state.roundId = j.round_id;
     document.getElementById('out-round').innerHTML = `
       <div class="row"><span class="k">round id</span><span class="v">${j.round_id}</span></div>
       <div class="row"><span class="k">audit entries</span><span class="v">${j.audit_entries.length}</span></div>
       <div class="row"><span class="k">simulated</span><span class="v">${j.is_simulated}</span></div>
     `;
-    // Apply RepID animation immediately from the round response.
     if(j.apm) applyAgent('apm', j.apm);
     if(j.veritas) applyAgent('veritas', j.veritas);
     btn.textContent = 'done';
     activate(4);
-    pollSnapshot();   // start the watch loop
+    pollSnapshot();
     pollAudit(j.audit_entries);
+    // Reveal-when-it-matters: introduce "RepID" terminology now that the visitor has seen it move
+    setTimeout(() => showSuccessTour(j), 1200);
   } catch(e){
     showErr('Step 3 failed: ' + e.message);
     btn.disabled = false;
     btn.textContent = 'Run round';
   }
 });
+
+// Driver.js step pointed at the bet input — this is the moment we introduce "authority"
+function handleBetExceedsAuthority(j){
+  const msg = (j && j.human_message)
+    || `Your agent tried to bet more than its authority. The system stopped it.`;
+  const recHuman = state.recommendedBetUsdc
+    || (j && j.details && j.details.recommended_bet_human_usdc)
+    || '0.006';
+  const recRaw = state.recommendedBetRaw
+    || (j && j.details && j.details.recommended_bet_raw)
+    || '6000';
+
+  if(!driverFn){
+    // Graceful fallback if CDN failed to load
+    showErr(msg + ' Recommended: $' + recHuman);
+    document.getElementById('bet-amount-input').value = (parseInt(recRaw, 10) / 1_000_000).toFixed(6);
+    return;
+  }
+
+  const tour = driverFn({
+    showProgress: false,
+    stagePadding: 8,
+    allowClose: true,
+    overlayColor: '#000',
+    steps: [{
+      element: '#bet-input-row',
+      popover: {
+        title: 'The system stopped your agent',
+        description: msg,
+        side: 'bottom',
+        align: 'start',
+        showButtons: ['next', 'close'],
+        nextBtnText: `Try $${recHuman}`,
+        onNextClick: () => {
+          document.getElementById('bet-amount-input').value = (parseInt(recRaw, 10) / 1_000_000).toFixed(6);
+          tour.destroy();
+          // Re-fire the round; state.attemptedDeliberateFail is true now, so this uses input/recommended
+          document.getElementById('btn-round').click();
+        }
+      }
+    }]
+  });
+  tour.drive();
+}
+
+// Two-step reveal tour after the round succeeds: RepID terminology + audit chain
+function showSuccessTour(roundJson){
+  if(!driverFn){ revealShareCard(roundJson); activate(5); return; }
+  const tour = driverFn({
+    showProgress: false,
+    stagePadding: 8,
+    allowClose: true,
+    overlayColor: '#000',
+    steps: [
+      {
+        element: '#agents-grid',
+        popover: {
+          title: 'Reputation just moved',
+          description: 'Your agent just earned reputation. We call this <strong>RepID</strong>. Higher RepID = higher authority = bigger bets allowed.',
+          side: 'top',
+          align: 'center',
+          showButtons: ['next'],
+          nextBtnText: 'Got it'
+        }
+      },
+      {
+        element: '#audit-panel',
+        popover: {
+          title: 'Logged on-chain',
+          description: 'Every reputation move is logged on-chain. Verifiable forever.',
+          side: 'top',
+          align: 'start',
+          showButtons: ['next'],
+          nextBtnText: 'Show me how to share'
+        }
+      }
+    ],
+    onDestroyed: () => {
+      revealShareCard(roundJson);
+      activate(5);
+    }
+  });
+  tour.drive();
+}
+
+function revealShareCard(roundJson){
+  const card = document.getElementById('share-card');
+  let delta = 0, repidNum = '—';
+  if(roundJson && roundJson.apm){
+    const before = Number(roundJson.apm.repid_before || 0);
+    const after  = Number(roundJson.apm.repid_after  || 0);
+    delta = (roundJson.apm.delta !== undefined) ? Number(roundJson.apm.delta) : (after - before);
+    if(after) repidNum = after;
+  }
+  document.getElementById('share-repid-num').textContent = repidNum !== '—' ? Number(repidNum).toLocaleString() : '—';
+  document.getElementById('share-delta-text').textContent = (delta >= 0 ? 'earned +' : 'lost ') + Math.abs(delta) + ' RepID';
+  setupShare(delta);
+  card.classList.add('visible');
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 function applyAgent(prefix, snap){
   const repidEl = document.getElementById(prefix + '-repid');
@@ -285,13 +480,12 @@ function applyAgent(prefix, snap){
     deltaEl.style.color = delta > 0 ? 'var(--m)' : 'var(--bad)';
   }
   card.classList.remove('flash-up','flash-down');
-  void card.offsetWidth;   // restart animation
+  void card.offsetWidth;
   if(delta > 0) card.classList.add('flash-up');
   else if(delta < 0) card.classList.add('flash-down');
 }
 
-// Step 4 — poll snapshot for 30s, animate any further changes (rare in
-// this single-round demo, but if Sean re-clicks step 3 the chart catches up)
+// Step 4 — poll snapshot for further changes
 let snapPollerStops = null;
 async function pollSnapshot(){
   if(snapPollerStops) return;
@@ -313,16 +507,15 @@ async function pollSnapshot(){
       }
       if(apmAgent) lastApm = apmAgent.current_repid;
       if(veritasAgent) lastVeritas = veritasAgent.current_repid;
-    } catch(e){ /* swallow */ }
+    } catch(e){}
   };
   await tick();
   const id = setInterval(tick, 2000);
-  function stop(){ clearInterval(id); snapPollerStops = null; setupShare(); activate(5); }
+  function stop(){ clearInterval(id); snapPollerStops = null; }
   snapPollerStops = stop;
 }
 
-// Audit ticker — render the entries returned by the round, then refresh
-// from /audit-chain/recent every 5s for the rest of the session.
+// Audit ticker
 function pollAudit(initial){
   const list = document.getElementById('audit-list');
   function render(entries){
@@ -343,11 +536,26 @@ function pollAudit(initial){
   setTimeout(() => clearInterval(id), 60000);
 }
 
-// Step 5 — share link
-function setupShare(){
-  const text = encodeURIComponent('I just watched two AI agents trade with reputation-staked authority on @hyperdag — @trustrails @trustshell\n\ntry it: https://trustrepid.dev/reponomics-live/');
+// Step 5 — share-card wiring
+function setupShare(delta){
+  const deltaSign = delta > 0 ? '+' + delta : String(delta);
+  const text = encodeURIComponent(
+    `My AI agent just earned its way up. RepID ${deltaSign} on canonical ERC-8004.\n\n` +
+    `Watch yours: https://trustrepid.dev/reponomics-live/ #ERC8004 #TrustlessAgents`
+  );
   const url = 'https://twitter.com/intent/tweet?text=' + text;
   document.getElementById('share-x').href = url;
+  const copyBtn = document.getElementById('share-copy');
+  copyBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText('https://trustrepid.dev/reponomics-live/');
+      const originalText = 'Or copy link';
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = originalText; }, 1800);
+    } catch(e){
+      copyBtn.textContent = 'Copy failed';
+    }
+  };
 }
 </script>
 
