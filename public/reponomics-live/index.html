@@ -278,7 +278,7 @@ document.getElementById('btn-stake').addEventListener('click', async () => {
     if(!j.ok) throw new Error(j.error || 'stake deposit failed');
     document.getElementById('out-stake').innerHTML = `
       <div class="row"><span class="k">total active stake</span><span class="v">$${(BigInt(j.total_active_stake)/1000000n).toString()} USDC</span></div>
-      <div class="row"><span class="k">trading limit</span><span class="v">${j.authority_after}</span></div>
+      <div class="row"><span class="k">trading limit</span><span class="v">$${(Number(j.authority_after)/1000000).toFixed(2)}</span></div>
       <div class="row"><span class="k">simulated</span><span class="v">${j.is_simulated}</span></div>
     `;
     btn.textContent = 'done';
@@ -301,6 +301,7 @@ async function fetchRecommendedBet(){
     const j = await r.json();
     if(j.recommended_bet_raw) state.recommendedBetRaw = String(j.recommended_bet_raw);
     if(j.max_safe_bet_raw) state.maxSafeBetRaw = String(j.max_safe_bet_raw);
+    if(j.authority_raw) state.authorityRaw = String(j.authority_raw);
     if(j.recommended_bet_human_usdc) state.recommendedBetUsdc = j.recommended_bet_human_usdc;
     if(j.authority_human_usdc) state.authorityUsdc = j.authority_human_usdc;
     if(state.recommendedBetUsdc){
@@ -316,10 +317,10 @@ document.getElementById('btn-round').addEventListener('click', async () => {
   const betInput = document.getElementById('bet-amount-input');
 
   let body = {};
-  if(state.maxSafeBetRaw && !state.attemptedDeliberateFail){
-    // Deliberate fail: send max_safe + 100 to provoke BET_EXCEEDS_AUTHORITY
+  if(state.authorityRaw && !state.attemptedDeliberateFail){
+    // Deliberate fail: send authority + 100 to provoke BET_EXCEEDS_AUTHORITY
     body = {
-      bet_amount: (BigInt(state.maxSafeBetRaw) + 100n).toString(),
+      bet_amount: (BigInt(state.authorityRaw) + 1000000n).toString(),
       token: state.token
     };
     state.attemptedDeliberateFail = true;
@@ -402,8 +403,6 @@ function handleBetExceedsAuthority(j){
         onNextClick: () => {
           document.getElementById('bet-amount-input').value = (parseInt(recRaw, 10) / 1_000_000).toFixed(6);
           tour.destroy();
-          // Re-fire the round; state.attemptedDeliberateFail is true now, so this uses input/recommended
-          document.getElementById('btn-round').click();
         }
       }
     }]
