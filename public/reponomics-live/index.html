@@ -317,10 +317,11 @@ document.getElementById('btn-round').addEventListener('click', async () => {
   const betInput = document.getElementById('bet-amount-input');
 
   let body = {};
-  if(state.authorityRaw && !state.attemptedDeliberateFail){
-    // Deliberate fail: send authority + 100 to provoke BET_EXCEEDS_AUTHORITY
+  if(state.authorityUsdc && !state.attemptedDeliberateFail){
+    // Deliberate fail: send authority + $1.00 to provoke BET_EXCEEDS_AUTHORITY
+    const failAmountHuman = Number(state.authorityUsdc) + 1.0;
     body = {
-      bet_amount: (BigInt(state.authorityRaw) + 1000000n).toString(),
+      bet_amount: String(Math.round(failAmountHuman * 1_000_000)),
       token: state.token
     };
     state.attemptedDeliberateFail = true;
@@ -372,12 +373,12 @@ document.getElementById('btn-round').addEventListener('click', async () => {
 function handleBetExceedsAuthority(j){
   const msg = (j && j.human_message)
     || `Your agent tried to bet more than its authority. The system stopped it.`;
-  const recHuman = state.recommendedBetUsdc
-    || (j && j.details && j.details.recommended_bet_human_usdc)
-    || '0.006';
-  const recRaw = state.recommendedBetRaw
-    || (j && j.details && j.details.recommended_bet_raw)
-    || '6000';
+  const recHuman = (j && j.details && j.details.recommended_bet_human_usdc) 
+    ? Number(j.details.recommended_bet_human_usdc).toFixed(2)
+    : '25.00';
+  const recRaw = (j && j.details && j.details.recommended_bet_raw)
+    ? String(j.details.recommended_bet_raw)
+    : '25000000';
 
   if(!driverFn){
     // Graceful fallback if CDN failed to load
