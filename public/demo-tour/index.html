@@ -61,6 +61,7 @@
     <p>All 12 Trinity Symphony agents on the ERC-8004 Identity Registry, Base Sepolia. Live RPC query.</p>
     <div class="actions">
       <a class="btn primary" href="/fleet-status/">Open</a>
+      <a class="btn" href="https://repid-engine-production.up.railway.app/api/v1/fleet/status" target="_blank">Raw API</a>
     </div>
   </div>
 </div>
@@ -72,6 +73,7 @@
     <p>Connect wallet, sign challenge, get token id + IPFS metadata + audit-chain entry.</p>
     <div class="actions">
       <a class="btn primary" href="/sbt-mint/">Open</a>
+      <a class="btn" href="https://repid-engine-production.up.railway.app/api/v1/sbt/challenge?holder=0x71be63f3384f5fb98995898a86b02fb289d76570" target="_blank">Challenge API</a>
     </div>
   </div>
 </div>
@@ -94,6 +96,8 @@
     <p>Every action above emits a hash-chained row in <code>hal_audit_chain</code>. Range-verify any window.</p>
     <div class="actions">
       <a class="btn primary" href="/audit-chain/">Open</a>
+      <a class="btn" href="https://repid-engine-production.up.railway.app/api/v1/audit-chain/recent?limit=20" target="_blank">Recent</a>
+      <a class="btn" href="https://repid-engine-production.up.railway.app/api/v1/audit-chain/stats" target="_blank">Stats</a>
     </div>
   </div>
 </div>
