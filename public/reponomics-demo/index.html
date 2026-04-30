@@ -114,6 +114,10 @@ function renderBuilder(prefix, b){
 }
 
 async function refresh(){
+  const btn = document.getElementById('btn-refresh');
+  const oldText = btn.textContent;
+  btn.textContent = 'Refreshing...';
+  btn.disabled = true;
   errbar.style.display='none';
   try {
     const r = await fetch(api('/api/v1/demo/two-builder/snapshot'));
@@ -132,12 +136,26 @@ async function refresh(){
   } catch(e){
     errbar.style.display='block';
     errbar.textContent = 'Refresh failed: ' + e.message;
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
   }
 }
 
 async function bootstrap(){
-  await fetch(api('/api/v1/demo/two-builder/bootstrap'), {method:'POST'});
-  await refresh();
+  const btn = document.getElementById('btn-bootstrap');
+  const oldText = btn.textContent;
+  btn.textContent = 'Bootstrapping...';
+  btn.disabled = true;
+  try {
+    await fetch(api('/api/v1/demo/two-builder/bootstrap'), {method:'POST'});
+    await refresh();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
+  }
 }
 
 async function renderChart(){
@@ -152,7 +170,7 @@ async function renderChart(){
   ctx.fillStyle = '#0a0e23'; ctx.fillRect(0,0,w,h);
   if(pts.length < 2){
     ctx.fillStyle = '#8c97c4'; ctx.font = '12px system-ui';
-    ctx.fillText('not enough data — click Bootstrap snapshot', 12, 28);
+    ctx.fillText('Historical data coming soon (API aggregation in progress)', 12, 28);
     return;
   }
   const wAuths = pts.map(p=>Number(p.builder_w_authority));
