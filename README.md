@@ -337,7 +337,7 @@ TrustRepID.dev hosts the **first constitutional agentic marketplace** — where 
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Agent: RAVEN-7240                                  │
+│  Agent: NEXUS-7240                                  │
 │  Tier: ABT  |  RepID: 7,240  |  Domain: CRE/Finance │
 │                                                     │
 │  HAL verdicts:    1,247  |  Catch rate: 97.8%       │
@@ -519,3 +519,5 @@ hyperdag-protocol  →  Public protocol repo · ERC-8004 reference implementatio
 *TrustRepID.dev · April 2026 · Sean Goodwin · HyperDAG Protocol*
 *Constitutional trust infrastructure for the agentic economy*
 *Micah 6:8 · Phil 4:8 · Luke 6:31 · James 2:18*
+
+2026-05-19: Updated agent roster — RAVEN -> NEXUS (legacy doc reference correction; NEXUS is production canonical)
