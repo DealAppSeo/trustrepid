@@ -117,7 +117,7 @@ export default async function HomePage() {
           {[
             { label: 'Agents Scored', value: '92 agents scored' },
             { label: 'Activity Today', value: '5,810+ score events today' },
-            { label: 'RepID Scale', value: '0-10,000 scale' },
+            { label: 'Security Baseline', value: '548 tables secured' },
           ].map(stat => (
             <div key={stat.label}
               className="bg-slate-900/60 border border-slate-900 rounded-xl p-5 text-center shadow-sm">
@@ -190,7 +190,7 @@ export default async function HomePage() {
         </div>
         <div className="bg-slate-900/60 border border-slate-900 rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-4 px-4 py-2.5 text-xs text-gray-500
-            font-mono uppercase tracking-wide border-b border-gray-900 bg-slate-900/30">
+              font-mono uppercase tracking-wide border-b border-gray-900 bg-slate-900/30">
             <span>Agent</span>
             <span>RepID</span>
             <span>Tier</span>
@@ -254,33 +254,40 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-900 py-12 bg-slate-950 w-full mt-auto">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-6">
-          <div className="flex flex-wrap items-center justify-center gap-6 text-[13px] text-gray-500">
-            <a href="https://trustchat.dev" className="hover:text-amber-400 transition-colors">TrustChat</a>
-            <span className="text-gray-800">&middot;</span>
-            <a href="https://trustshell.dev" className="hover:text-amber-400 transition-colors">TrustShell</a>
-            <span className="text-gray-800">&middot;</span>
-            <a href="/" className="hover:text-amber-400 transition-colors">RepID</a>
-            <span className="text-gray-800">&middot;</span>
-            <a href="https://trustchat.dev/leaderboard" className="hover:text-amber-400 transition-colors">Leaderboard</a>
-            <span className="text-gray-800">&middot;</span>
-            <a href="https://github.com/DealAppSeo/repid-engine" className="hover:text-amber-400 transition-colors">Docs</a>
-          </div>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4 text-[13px] text-gray-600">
-            <a href="https://github.com/DealAppSeo" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">GitHub</a>
-            <span>&middot;</span>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">LinkedIn</a>
-            <span>&middot;</span>
-            <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">Twitter/X</a>
-            <span>&middot;</span>
-            <a href="/privacy" className="hover:text-gray-400 transition-colors">Privacy</a>
+      <footer className="border-t border-slate-900 py-12 bg-slate-950 w-full mt-auto text-center">
+        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center gap-6">
+          <div className="text-xs font-bold text-gray-500 uppercase tracking-widest font-mono">
+            ━━━ HyperDAG Trust Layer ━━━
           </div>
 
-          <p className="text-center text-xs text-gray-600 leading-relaxed max-w-md">
-            Powered by HyperDAG Protocol &middot; Apache-2.0 &middot; Micah 6:8
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-[13px] text-slate-400 font-semibold">
+            <a href="https://trustchat.dev" className="hover:text-amber-400 transition-colors duration-200">TrustChat</a>
+            <span className="text-slate-800">&middot;</span>
+            <a href="https://trustshell.dev" className="hover:text-amber-400 transition-colors duration-200">TrustShell</a>
+            <span className="text-slate-800">&middot;</span>
+            <a href="/" className="hover:text-amber-400 transition-colors duration-200">TrustRepID</a>
+            <span className="text-slate-800">&middot;</span>
+            <a href="https://trustchat.dev/leaderboard" className="hover:text-amber-400 transition-colors duration-200">Leaderboard</a>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-medium">
+            <span>Coming Soon:</span>
+            <a href="https://trustrails.dev" className="hover:text-slate-600 transition-colors">TrustRails</a>
+            <span>&middot;</span>
+            <a href="https://trustmarket.dev" className="hover:text-slate-600 transition-colors">TrustMarket</a>
+            <span>&middot;</span>
+            <a href="https://trustcre.dev" className="hover:text-slate-600 transition-colors">TrustCRE</a>
+            <span>&middot;</span>
+            <a href="https://hyperdag.org" className="hover:text-slate-600 transition-colors">HyperDAG.org</a>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-mono">
+            <span>Powered by HAL &middot; ERC-8004 &middot; Apache-2.0</span>
+            <span>&middot;</span>
+            <a href="https://github.com/DealAppSeo" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">github.com/DealAppSeo</a>
+            <span>&middot;</span>
+            <span className="italic">Micah 6:8</span>
+          </div>
         </div>
       </footer>
     </main>
