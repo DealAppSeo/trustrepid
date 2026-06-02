@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(www\\.)?repid\\.dev"
+        }
+      ],
+      "destination": "https://trustrepid.dev/$1",
+      "permanent": true
+    }
+  ]
+}
