@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getBounties } from '@/lib/engine';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Bounty = any;

@@ -1,7 +1,7 @@
 import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
 import LiveMetricsBar from '../components/LiveMetricsBar';
 
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 export default async function LeaderboardPage() {
   const agents = await getAgents(20).catch(() => null);

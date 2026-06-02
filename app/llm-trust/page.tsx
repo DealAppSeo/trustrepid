@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 // Revalidate every 30 seconds
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 export default async function LLMTrustPage() {
   const ENGINE_URL = process.env.NEXT_PUBLIC_REPID_ENGINE_URL || 'https://repid-engine-production.up.railway.app';
