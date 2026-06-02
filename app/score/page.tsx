@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getAgent, getAgentHistory, getZKPDisclosure,
   TIER_COLORS, formatRepId, formatDelta,
@@ -17,6 +17,59 @@ export default function ScorePage() {
   const [proofTier, setProofTier] = useState<'POSTCARD' | 'ENVELOPE'>('POSTCARD');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-search if q or id is in query params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q') || params.get('id');
+      if (q) {
+        setQuery(q);
+        const runAutoSearch = async (val: string) => {
+          setLoading(true);
+          setError(null);
+          setAgent(null);
+          setHistory([]);
+          setDisclosure(null);
+          try {
+            let found: Agent | null = null;
+            if (val.length === 36 && val.includes('-')) {
+              found = await getAgent(val);
+            } else {
+              const res = await fetch(`${ENGINE_URL}/agents?limit=100`);
+              if (res.ok) {
+                const agents: Agent[] = await res.json();
+                found = agents.find(a =>
+                  a.agent_name.toLowerCase() === val.toLowerCase() ||
+                  a.erc8004_address.toLowerCase() === val.toLowerCase()
+                ) ?? null;
+              }
+            }
+
+            if (!found) {
+              setError('Agent not found. Try a different name or ERC-8004 address.');
+              setLoading(false);
+              return;
+            }
+
+            const [hist, disc] = await Promise.all([
+              getAgentHistory(found.id),
+              getZKPDisclosure(found.id, proofTier),
+            ]);
+
+            setAgent(found);
+            setHistory(hist);
+            setDisclosure(disc);
+          } catch {
+            setError('Engine unreachable. Please try again.');
+          } finally {
+            setLoading(false);
+          }
+        };
+        runAutoSearch(q);
+      }
+    }
+  }, [proofTier]);
 
   const search = useCallback(async () => {
     if (!query.trim()) return;
