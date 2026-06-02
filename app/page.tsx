@@ -3,7 +3,7 @@ import ActivityFeed from './components/ActivityFeed';
 import LiveMetricsBar from './components/LiveMetricsBar';
 import EmailCaptureForm from './components/EmailCaptureForm';
 
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const [health, agents] = await Promise.all([
