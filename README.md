@@ -62,7 +62,7 @@
 
 The agent-trader path also reaches out to **paper-api.alpaca.markets** for the
 paper-trade execution leg of full-account builders. See
-[`repid-engine/docs/TRADING-BRIDGE-ARCHITECTURE.md`](https://github.com/DealAppSeo/repid-engine/blob/main/docs/TRADING-BRIDGE-ARCHITECTURE.md).
+[`repid-engine/docs/TRADING-BRIDGE-ARCHITECTURE.md (private)`](https://github.com/DealAppSeo/repid-engine/blob/main/docs/TRADING-BRIDGE-ARCHITECTURE.md).
 
 ---
 
@@ -516,7 +516,7 @@ hyperdag-protocol  →  Public protocol repo · ERC-8004 reference implementatio
 
 ---
 
-*TrustRepID.dev · April 2026 · Sean Goodwin · HyperDAG Protocol*
+*TrustRepID.dev · June 1, 2026 · Sean Goodwin · HyperDAG Protocol*
 *Constitutional trust infrastructure for the agentic economy*
 *Micah 6:8 · Phil 4:8 · Luke 6:31 · James 2:18*
 

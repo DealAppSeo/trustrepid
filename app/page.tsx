@@ -34,7 +34,7 @@ export default async function HomePage() {
           <a href="https://trustchat.dev/leaderboard" className="text-gray-400 hover:text-gray-100 transition-colors">
             Leaderboard
           </a>
-          <a href="https://github.com/DealAppSeo/repid-engine" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-100 transition-colors">
+          <a href="https://github.com/DealAppSeo/hyperdag-protocol" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-100 transition-colors">
             Docs
           </a>
           <a href="/install" className="bg-amber-500 hover:bg-amber-400 text-gray-950
