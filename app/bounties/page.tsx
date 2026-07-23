@@ -8,8 +8,6 @@ type Bounty = any;
 
 export default async function BountiesPage() {
   const bounties = await getBounties();
-  const totalRepId = bounties.reduce((s: number, b: Bounty) => s + (b.bounty_repid || 0), 0);
-  const totalUsdc = bounties.reduce((s: number, b: Bounty) => s + (b.bounty_usdc || 0), 0);
 
   return (
     <main className="min-h-screen bg-gray-950 text-gray-100">
@@ -21,32 +19,26 @@ export default async function BountiesPage() {
         <div className="flex items-center gap-6 text-sm">
           <Link href="/score" className="text-gray-400 hover:text-gray-100">Score Agent</Link>
           <Link href="/leaderboard" className="text-gray-400 hover:text-gray-100">Leaderboard</Link>
-          <Link href="/bounties" className="text-amber-400">Bounties</Link>
+          <Link href="/bounties" className="text-amber-400">Contribute</Link>
           <Link href="/ethics" className="text-gray-400 hover:text-gray-100">Ethics</Link>
         </div>
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 pt-12 pb-24">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">Agent Bounty Board</h1>
-            <p className="text-gray-500 text-sm font-mono">
-              Earn RepID + USDC by completing ecosystem work.
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-amber-400 font-mono font-bold text-xl">
-              {totalRepId.toLocaleString()} RepID
-            </div>
-            <div className="text-green-400 font-mono text-sm">${totalUsdc} USDC</div>
-            <div className="text-gray-600 text-xs">available now</div>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Open problems — help build the trust layer</h1>
+          <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
+            Concrete, well-scoped work that moves the protocol forward. Contributors earn portable
+            RepID and recognition in the ecosystem they help build — this is open-source contribution,
+            not a paid bounty program. Pick one up, open a PR against the named repo, and meet the
+            acceptance criteria.
+          </p>
         </div>
 
         <div className="space-y-3">
           {bounties.length === 0 ? (
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-600 font-mono">
-              No open bounties.
+              No open problems posted right now — check back, or open an issue on GitHub.
             </div>
           ) : (
             bounties.map((b: Bounty) => (
@@ -59,11 +51,6 @@ export default async function BountiesPage() {
                     {b.bounty_repid > 0 && (
                       <span className="bg-amber-900/30 border border-amber-700/50 text-amber-400 px-2 py-1 rounded text-xs font-mono">
                         +{b.bounty_repid.toLocaleString()} RepID
-                      </span>
-                    )}
-                    {b.bounty_usdc > 0 && (
-                      <span className="bg-green-900/30 border border-green-700/50 text-green-400 px-2 py-1 rounded text-xs font-mono">
-                        ${b.bounty_usdc} USDC
                       </span>
                     )}
                   </div>

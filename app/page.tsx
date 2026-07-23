@@ -46,13 +46,12 @@ export default async function HomePage() {
 
       <LiveMetricsBar />
 
-      {/* Compliance Badges Bar */}
+      {/* Posture badges — verifiable-first; patents live quietly in the footer */}
       <div className="flex flex-wrap gap-3 justify-center py-3 px-6 bg-slate-900/40 border-b border-gray-900 text-xs">
-        {['Designed toward EU AI Act Art. 14',
-          'Selective-disclosure KYC via ZKP (in design)',
-          'Patents filed',
-          'Apache 2.0 licensed ✓',
-          'ERC-8004 on Base Sepolia ✓'
+        {['Open protocol · Apache 2.0 ✓',
+          'ERC-8004 on Base Sepolia ✓',
+          'Designed toward EU AI Act Art. 14',
+          'Selective-disclosure KYC via ZKP (in design)'
         ].map(badge => (
           <span key={badge} className="background-slate-900 text-indigo-400 bg-indigo-950/20 border border-indigo-900/30 px-3 py-1 rounded-full font-semibold">
             {badge}
@@ -252,6 +251,38 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Mission CTA — the open-source call to solve the AI trust problem */}
+      <section className="w-full border-t border-gray-900 bg-gradient-to-b from-slate-950 to-slate-900/60">
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center flex flex-col items-center">
+          <span className="text-[11px] font-mono uppercase tracking-widest text-amber-500 mb-4">
+            An open problem, not a product pitch
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-5 leading-tight">
+            The trust layer AI is missing — let&apos;s build it in the open.
+          </h2>
+          <p className="text-gray-400 leading-relaxed max-w-2xl mb-8">
+            AI agents are being trusted with real decisions, yet models still hallucinate, get
+            jailbroken, and give unsafe advice — and after the fact, no one can prove what an agent
+            actually did. RepID is our attempt at the evidence layer: reputation earned through
+            verified behavior, provable without surveillance. It is early, and it is a hard problem.
+            If you build, research, or just care where AI is heading, help us get it right.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <a href="/bounties"
+              className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-6 py-3 rounded-xl font-semibold text-sm transition-colors">
+              See the open problems &rarr;
+            </a>
+            <a href="https://github.com/DealAppSeo/repid-engine" target="_blank" rel="noopener noreferrer"
+              className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-gray-200 px-6 py-3 rounded-xl font-medium text-sm transition-colors">
+              Read the protocol on GitHub &rarr;
+            </a>
+          </div>
+          <p className="text-xs text-gray-600 mt-6">
+            Builders ship against it &middot; researchers audit the claims &middot; skeptics try to break it.
+          </p>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-gray-900 py-12 bg-slate-950 w-full mt-auto">
         <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-6">
@@ -279,6 +310,10 @@ export default async function HomePage() {
 
           <p className="text-center text-xs text-gray-600 leading-relaxed max-w-md">
             Powered by HyperDAG Protocol &middot; Apache-2.0 &middot; Micah 6:8
+          </p>
+          <p className="text-center text-[11px] text-gray-700 leading-relaxed max-w-md">
+            Open protocol, Apache-2.0. Provisional patents filed on the underlying methods —
+            defensively, to keep the trust layer open rather than let anyone enclose it.
           </p>
         </div>
       </footer>
