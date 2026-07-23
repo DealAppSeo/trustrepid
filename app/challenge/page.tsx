@@ -288,9 +288,9 @@ export default function ChallengePage() {
                   <div className="flex items-center gap-2 mt-1">
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded font-mono ${
-                        tierVal === 'AUTONOMOUS'
+                        tierVal === 'AUTONOMOUS' || tierVal === 'VETERAN'
                           ? 'bg-amber-900/30 text-amber-400'
-                          : tierVal === 'EARNING_AUTONOMY'
+                          : tierVal === 'ESTABLISHED'
                           ? 'bg-blue-900/30 text-blue-400'
                           : 'bg-gray-800 text-gray-500'
                       }`}>

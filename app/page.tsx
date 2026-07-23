@@ -1,4 +1,4 @@
-import { getEngineHealth, getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
+import { getEngineHealth, getAgents, TIER_COLORS, DEFAULT_TIER_STYLE, formatRepId } from '@/lib/engine';
 import ActivityFeed from './components/ActivityFeed';
 import LiveMetricsBar from './components/LiveMetricsBar';
 import EmailCaptureForm from './components/EmailCaptureForm';
@@ -48,12 +48,11 @@ export default async function HomePage() {
 
       {/* Compliance Badges Bar */}
       <div className="flex flex-wrap gap-3 justify-center py-3 px-6 bg-slate-900/40 border-b border-gray-900 text-xs">
-        {['EU AI Act Article 14 ✓',
-          'Colorado AI Act Ready ✓',
-          'BSA/AML/KYC via ZKP ✓',
-          'Patents Pending ✓',
-          'Apache 2.0 Licensed ✓',
-          'Base Anchor ERC-8004 ✓'
+        {['Designed toward EU AI Act Art. 14',
+          'Selective-disclosure KYC via ZKP (in design)',
+          'Patents filed',
+          'Apache 2.0 licensed ✓',
+          'ERC-8004 on Base Sepolia ✓'
         ].map(badge => (
           <span key={badge} className="background-slate-900 text-indigo-400 bg-indigo-950/20 border border-indigo-900/30 px-3 py-1 rounded-full font-semibold">
             {badge}
@@ -206,7 +205,7 @@ export default async function HomePage() {
             </div>
           ) : (
             agents.map((agent, i) => {
-              const tierStyle = TIER_COLORS[agent.tier] || TIER_COLORS.CUSTODIED_DBT;
+              const tierStyle = TIER_COLORS[agent.tier] || DEFAULT_TIER_STYLE;
               return (
                 <a key={agent.id} href={`/score?id=${agent.id}`}
                   className="grid grid-cols-4 px-4 py-3.5 border-b border-gray-900

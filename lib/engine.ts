@@ -1,10 +1,15 @@
 const ENGINE_URL = process.env.NEXT_PUBLIC_REPID_ENGINE_URL || 'https://repid-engine-production.up.railway.app';
 
+// Canonical 5-tier scheme (matches repid-engine compute_tier + CLAUDE.md).
+// The old 3-tier names (CUSTODIED_DBT/EARNING_AUTONOMY) were a deprecated
+// taxonomy the engine no longer emits.
+export type Tier = 'PROBATIONARY' | 'EARNING' | 'ESTABLISHED' | 'AUTONOMOUS' | 'VETERAN';
+
 export interface Agent {
   id: string;
   agent_name: string;
   current_repid: number;
-  tier: 'CUSTODIED_DBT' | 'EARNING_AUTONOMY' | 'AUTONOMOUS';
+  tier: Tier;
   activity_30d: number;
   last_updated: string;
   erc8004_address: string;
@@ -46,14 +51,21 @@ export interface ZKPDisclosure {
   merkleRoot?: string;
 }
 
-export const TIER_COLORS = {
+export const TIER_COLORS: Record<Tier, { bg: string; text: string; border: string; label: string; emoji: string }> = {
+  VETERAN: { bg: 'bg-purple-100', text: 'text-purple-800',
+    border: 'border-purple-400', label: 'VETERAN', emoji: '👑' },
   AUTONOMOUS: { bg: 'bg-amber-100', text: 'text-amber-800',
     border: 'border-amber-400', label: 'AUTONOMOUS', emoji: '🏆' },
-  EARNING_AUTONOMY: { bg: 'bg-blue-100', text: 'text-blue-800',
-    border: 'border-blue-400', label: 'EARNING AUTONOMY', emoji: '📈' },
-  CUSTODIED_DBT: { bg: 'bg-gray-100', text: 'text-gray-700',
-    border: 'border-gray-400', label: 'CUSTODIED DBT', emoji: '🔒' },
+  ESTABLISHED: { bg: 'bg-blue-100', text: 'text-blue-800',
+    border: 'border-blue-400', label: 'ESTABLISHED', emoji: '📈' },
+  EARNING: { bg: 'bg-teal-100', text: 'text-teal-800',
+    border: 'border-teal-400', label: 'EARNING', emoji: '🌱' },
+  PROBATIONARY: { bg: 'bg-gray-100', text: 'text-gray-700',
+    border: 'border-gray-400', label: 'PROBATIONARY', emoji: '🔒' },
 } as const;
+
+/** Fallback for any tier string the engine returns that we don't style. */
+export const DEFAULT_TIER_STYLE = TIER_COLORS.PROBATIONARY;
 
 export async function getEngineHealth(): Promise<EngineHealth | null> {
   try {
@@ -62,26 +74,26 @@ export async function getEngineHealth(): Promise<EngineHealth | null> {
   } catch { return null; }
 }
 
+/**
+ * Public agent leaderboard. Uses the engine's public /api/v1/agents/minted
+ * (the auth-gated /agents needs an API key; the direct-Supabase path 401s
+ * under RLS). Maps the minted shape onto our Agent interface.
+ */
 export async function getAgents(limit = 20): Promise<Agent[]> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (supabaseUrl && anonKey) {
-    const res = await fetch(`${supabaseUrl}/rest/v1/repid_agents?current_repid=gt.0&order=current_repid.desc&select=id,agent_name,current_repid,tier,activity_30d,last_updated,erc8004_address,vdr_count&limit=${limit}`, {
-      headers: {
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`
-      },
-      next: { revalidate: 10 }
-    });
-    if (!res.ok) throw new Error(`getAgents Supabase failed: ${res.status}`);
-    return res.json();
-  }
-
-  const res = await fetch(`${ENGINE_URL}/agents?limit=${limit}`,
+  const res = await fetch(`${ENGINE_URL}/api/v1/agents/minted?limit=${limit}`,
     { next: { revalidate: 10 } });
   if (!res.ok) throw new Error(`getAgents failed: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  const rows: Array<Record<string, unknown>> = Array.isArray(data) ? data : (data.agents ?? []);
+  return rows.slice(0, limit).map((r) => ({
+    id: String(r.agent_id ?? r.name ?? ''),
+    agent_name: String(r.display_name ?? r.name ?? r.agent_id ?? 'unknown'),
+    current_repid: Number(r.current_repid ?? 0),
+    tier: (r.tier as Tier) ?? 'PROBATIONARY',
+    activity_30d: Number(r.activity_30d ?? 0),
+    last_updated: String(r.last_updated ?? ''),
+    erc8004_address: String(r.erc8004_token_id ?? r.erc8004_address ?? ''),
+  }));
 }
 
 export async function getAgent(id: string): Promise<Agent | null> {
