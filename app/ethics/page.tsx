@@ -155,7 +155,7 @@ export default function EthicsPage() {
         <div className="flex items-center gap-6 text-sm">
           <Link href="/score" className="text-gray-400 hover:text-gray-100">Score Agent</Link>
           <Link href="/leaderboard" className="text-gray-400 hover:text-gray-100">Leaderboard</Link>
-          <Link href="/bounties" className="text-gray-400 hover:text-gray-100">Bounties</Link>
+          <Link href="/bounties" className="text-gray-400 hover:text-gray-100">Contribute</Link>
           <Link href="/ethics" className="text-amber-400">Ethics</Link>
         </div>
       </nav>
