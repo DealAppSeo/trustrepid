@@ -7,8 +7,6 @@ import {
   Agent, RepIdEvent, ZKPDisclosure
 } from '@/lib/engine';
 
-const ENGINE_URL = process.env.NEXT_PUBLIC_REPID_ENGINE_URL || '';
-
 export default function ScorePage() {
   const [query, setQuery] = useState('');
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -32,19 +30,8 @@ export default function ScorePage() {
           setHistory([]);
           setDisclosure(null);
           try {
-            let found: Agent | null = null;
-            if (val.length === 36 && val.includes('-')) {
-              found = await getAgent(val);
-            } else {
-              const res = await fetch(`${ENGINE_URL}/agents?limit=100`);
-              if (res.ok) {
-                const agents: Agent[] = await res.json();
-                found = agents.find(a =>
-                  a.agent_name.toLowerCase() === val.toLowerCase() ||
-                  a.erc8004_address.toLowerCase() === val.toLowerCase()
-                ) ?? null;
-              }
-            }
+            // Public /api/v1/repid/:id accepts a name, UUID, or address.
+            const found = await getAgent(val.trim());
 
             if (!found) {
               setError('Agent not found. Try a different name or ERC-8004 address.');
@@ -80,20 +67,8 @@ export default function ScorePage() {
     setDisclosure(null);
 
     try {
-      // Try as UUID first, then search by name via list
-      let found: Agent | null = null;
-      if (query.length === 36 && query.includes('-')) {
-        found = await getAgent(query);
-      } else {
-        const res = await fetch(`${ENGINE_URL}/agents?limit=100`);
-        if (res.ok) {
-          const agents: Agent[] = await res.json();
-          found = agents.find(a =>
-            a.agent_name.toLowerCase() === query.toLowerCase() ||
-            a.erc8004_address.toLowerCase() === query.toLowerCase()
-          ) ?? null;
-        }
-      }
+      // Public /api/v1/repid/:id accepts a name, UUID, or address.
+      const found = await getAgent(query.trim());
 
       if (!found) {
         setError('Agent not found. Try a different name or ERC-8004 address.');
@@ -144,7 +119,7 @@ export default function ScorePage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && search()}
-            placeholder="SOPHIA · UUID · 0x8004..."
+            placeholder="SOPHIA · trinity-shofet · UUID · 0x8004..."
             className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3
               font-mono text-sm text-gray-200 placeholder-gray-600
               focus:outline-none focus:border-amber-500"
@@ -161,7 +136,7 @@ export default function ScorePage() {
 
         {/* Quick picks */}
         <div className="flex gap-2 mb-8 flex-wrap">
-          {['SOPHIA', 'RAVEN', 'GUARDIAN', 'ATLAS'].map(name => (
+          {['SOPHIA', 'NEXUS', 'trinity-shofet', 'trinity-veritas'].map(name => (
             <button key={name}
               onClick={() => { setQuery(name); }}
               className="px-3 py-1 rounded border border-gray-700 text-xs
