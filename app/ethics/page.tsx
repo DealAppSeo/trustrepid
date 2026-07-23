@@ -44,12 +44,17 @@ function EthicsContent() {
     if (!checkId.trim()) return;
     setLoading(true);
     setError(null);
-    const [a, e] = await Promise.all([getAgent(checkId.trim()), getAgentEthics(checkId.trim())]);
+    // Resolve name/address → agent (with its UUID) first, then fetch the
+    // ethics breakdown by the resolved UUID (the breakdown endpoint is
+    // keyed by UUID, not name). If the breakdown isn't available the page
+    // falls back to the basic score + tier card.
+    const a = await getAgent(checkId.trim());
     if (!a) {
       setError('Agent not found.');
       setLoading(false);
       return;
     }
+    const e = await getAgentEthics(a.id);
     setAgent(a);
     setEthics(e);
     setLoading(false);
