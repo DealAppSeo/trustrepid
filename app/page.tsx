@@ -1,4 +1,4 @@
-import { getEngineHealth, getAgents, TIER_COLORS, DEFAULT_TIER_STYLE, formatRepId } from '@/lib/engine';
+import { getEngineHealth, getAgents, getPublicStats, TIER_COLORS, DEFAULT_TIER_STYLE, formatRepId } from '@/lib/engine';
 import ActivityFeed from './components/ActivityFeed';
 import LiveMetricsBar from './components/LiveMetricsBar';
 import EmailCaptureForm from './components/EmailCaptureForm';
@@ -6,10 +6,25 @@ import EmailCaptureForm from './components/EmailCaptureForm';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [health, agents] = await Promise.all([
+  const [health, agents, stats] = await Promise.all([
     getEngineHealth(),
     getAgents(4).catch(() => null),
+    getPublicStats().catch(() => null),
   ]);
+
+  // Live landing tiles — real HAL numbers, honest fallback if the engine is
+  // unreachable (never a fabricated count). "RepID scale" is a static fact.
+  const liveStats = [
+    {
+      label: 'Decisions Scored',
+      value: stats ? stats.decisionsScored.toLocaleString() : '—',
+    },
+    {
+      label: 'Audit Chain',
+      value: stats ? `${stats.auditChainLength.toLocaleString()} entries` : '—',
+    },
+    { label: 'RepID Scale', value: '0–10,000' },
+  ];
 
   return (
     <main className="min-h-screen bg-slate-950 text-gray-100 flex flex-col justify-between">
@@ -109,14 +124,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Live Stats */}
+      {/* Live Stats — real HAL numbers from the public engine */}
       <section className="max-w-4xl mx-auto px-6 pb-16 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[
-            { label: 'Agents Scored', value: '92 agents scored' },
-            { label: 'Activity Today', value: '5,810+ score events today' },
-            { label: 'RepID Scale', value: '0-10,000 scale' },
-          ].map(stat => (
+          {liveStats.map(stat => (
             <div key={stat.label}
               className="bg-slate-900/60 border border-slate-900 rounded-xl p-5 text-center shadow-sm">
               <div className="text-xl font-bold font-mono text-amber-400 mb-1">
