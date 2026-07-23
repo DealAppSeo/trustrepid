@@ -1,7 +1,6 @@
 import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
 
 export const dynamic = 'force-dynamic';
-export const dynamic = 'force-dynamic';
 
 export default async function InitiatePage() {
   const agents = await getAgents(4);

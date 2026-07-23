@@ -1,59 +1,29 @@
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Live counts from the engine's PUBLIC endpoints. The prior direct-Supabase
+// counts 401/return-0 under RLS (that was the ticker's "0 agents scored").
+const ENGINE_URL =
+  process.env.NEXT_PUBLIC_REPID_ENGINE_URL ||
+  'https://repid-engine-production.up.railway.app';
 
-async function supabaseCount(path: string): Promise<number> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return 0;
+async function engineJson<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${SUPABASE_URL}${path}`, {
-      method: 'HEAD',
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        Prefer: 'count=exact',
-      },
-      next: { revalidate: 60 },
-    });
-    const range = res.headers.get('content-range');
-    if (!range) return 0;
-    const total = parseInt(range.split('/')[1], 10);
-    return Number.isFinite(total) ? total : 0;
+    const res = await fetch(`${ENGINE_URL}${path}`, { next: { revalidate: 60 } });
+    return res.ok ? ((await res.json()) as T) : null;
   } catch {
-    return 0;
-  }
-}
-
-async function supabaseJson<T>(path: string): Promise<T[]> {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return [];
-  try {
-    const res = await fetch(`${SUPABASE_URL}${path}`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-      next: { revalidate: 60 },
-    });
-    return res.ok ? ((await res.json()) as T[]) : [];
-  } catch {
-    return [];
+    return null;
   }
 }
 
 export default async function LiveMetricsBar() {
-  const [agents, vdrRows, decisions, providerRows] = await Promise.all([
-    supabaseCount('/rest/v1/repid_agents?select=id'),
-    supabaseJson<{ vdr_count: number | null }>(
-      '/rest/v1/repid_agents?select=vdr_count'
-    ),
-    supabaseCount(
-      '/rest/v1/repid_score_events?llm_provider=not.is.null&select=id'
-    ),
-    supabaseJson<{ llm_provider: string }>(
-      '/rest/v1/repid_score_events?llm_provider=not.is.null&select=llm_provider&limit=1000'
-    ),
+  const [mintedRes, boardRes, halRes] = await Promise.all([
+    engineJson<{ agents?: unknown[] }>('/api/v1/agents/minted?limit=500'),
+    engineJson<{ providers?: unknown[] }>('/api/v1/leaderboard'),
+    engineJson<{ total_classifications?: number; audit_chain_length?: number }>('/api/v1/hal/stats'),
   ]);
 
-  const vdrTotal = vdrRows.reduce((sum, r) => sum + (r.vdr_count || 0), 0);
-  const providers = new Set(providerRows.map((r) => r.llm_provider)).size;
+  const agents = Array.isArray(mintedRes?.agents) ? mintedRes!.agents!.length : 0;
+  const providers = Array.isArray(boardRes?.providers) ? boardRes!.providers!.length : 0;
+  const decisions = halRes?.total_classifications ?? 0;
+  const vdrTotal = halRes?.audit_chain_length ?? 0;
 
   return (
     <div
@@ -67,8 +37,7 @@ export default async function LiveMetricsBar() {
         ● {providers.toLocaleString()} LLM provider
         {providers === 1 ? '' : 's'}
       </span>
-      <span>● 100% HAL uptime</span>
-      <span>● EU AI Act compliant</span>
+      <span>● Designed toward EU AI Act Art. 14 (human oversight)</span>
       <span>● Bootstrapping mode: labeled by design</span>
     </div>
   );

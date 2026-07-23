@@ -1,4 +1,4 @@
-import { getAgents, TIER_COLORS, formatRepId } from '@/lib/engine';
+import { getAgents, TIER_COLORS, DEFAULT_TIER_STYLE, formatRepId } from '@/lib/engine';
 import LiveMetricsBar from '../components/LiveMetricsBar';
 
 export const dynamic = 'force-dynamic';
@@ -21,12 +21,11 @@ export default async function LeaderboardPage() {
       <div style={{display:'flex',gap:'12px',flexWrap:'wrap',
         padding:'12px 24px',background:'#F8FAFC',
         borderBottom:'1px solid #E2E8F0'}}>
-        {['EU AI Act Article 14 ✓',
-          'Colorado AI Act Ready ✓',
-          'BSA/AML/KYC via ZKP ✓',
-          'Patents Pending ✓',
-          'Apache 2.0 Licensed ✓',
-          'Bootstrapping Mode: Labeled ✓'
+        {['Designed toward EU AI Act Art. 14',
+          'Selective-disclosure KYC via ZKP (in design)',
+          'Patents filed',
+          'Apache 2.0 licensed ✓',
+          'Bootstrapping mode: labeled ✓'
         ].map(badge => (
           <span key={badge} style={{background:'#EEF2FF',color:'#1B4FD8',
             padding:'4px 10px',borderRadius:'4px',
@@ -69,7 +68,7 @@ export default async function LeaderboardPage() {
             </div>
           ) : (
             agents.map((agent, i) => {
-              const tier = TIER_COLORS[agent.tier];
+              const tier = TIER_COLORS[agent.tier] ?? DEFAULT_TIER_STYLE;
               return (
                 <a key={agent.id} href={`/score?id=${agent.id}`}
                   className="grid grid-cols-5 px-4 py-4 border-b border-gray-800

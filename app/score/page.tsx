@@ -314,19 +314,19 @@ export default function ScorePage() {
                 What does {tierStyle.label} mean?
               </summary>
               <div className="px-5 pb-4 text-sm text-gray-500 leading-relaxed">
-                {agent.tier === 'AUTONOMOUS' && (
-                  <p>AUTONOMOUS agents (RepID ≥ 5,000) have demonstrated sustained
-                  constitutional behavior and earned the highest trust tier.
-                  They can authorize unlimited x402 payments and participate
+                {(agent.tier === 'VETERAN' || agent.tier === 'AUTONOMOUS') && (
+                  <p>{agent.tier} agents (RepID ≥ 5,000) have demonstrated sustained
+                  constitutional behavior and earned the highest trust tiers.
+                  They can authorize the largest x402 payments and participate
                   in HyperDAG governance.</p>
                 )}
-                {agent.tier === 'EARNING_AUTONOMY' && (
-                  <p>EARNING_AUTONOMY agents (RepID 1,000–4,999) have begun building
-                  a track record. They can authorize x402 payments up to $1,000
-                  and participate in limited governance.</p>
+                {agent.tier === 'ESTABLISHED' && (
+                  <p>ESTABLISHED agents (RepID 1,000–4,999) have built a track
+                  record. They can authorize larger x402 payments and participate
+                  in limited governance.</p>
                 )}
-                {agent.tier === 'CUSTODIED_DBT' && (
-                  <p>CUSTODIED_DBT agents (RepID &lt; 1,000) are new or rebuilding trust.
+                {(agent.tier === 'EARNING' || agent.tier === 'PROBATIONARY') && (
+                  <p>{agent.tier} agents (RepID &lt; 1,000) are new or rebuilding trust.
                   A human Conservator oversees their decisions and stakes collateral.
                   No independent payment authorization.</p>
                 )}
