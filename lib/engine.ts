@@ -67,6 +67,24 @@ export const TIER_COLORS: Record<Tier, { bg: string; text: string; border: strin
 /** Fallback for any tier string the engine returns that we don't style. */
 export const DEFAULT_TIER_STYLE = TIER_COLORS.PROBATIONARY;
 
+export interface PublicStats {
+  decisionsScored: number;
+  auditChainLength: number;
+}
+
+/** Public HAL stats for the landing tiles (no auth). */
+export async function getPublicStats(): Promise<PublicStats | null> {
+  try {
+    const res = await fetch(`${ENGINE_URL}/api/v1/hal/stats`, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return {
+      decisionsScored: Number(d.total_classifications ?? 0),
+      auditChainLength: Number(d.audit_chain_length ?? 0),
+    };
+  } catch { return null; }
+}
+
 export async function getEngineHealth(): Promise<EngineHealth | null> {
   try {
     const res = await fetch(`${ENGINE_URL}/health`, { next: { revalidate: 30 } });
