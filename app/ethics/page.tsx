@@ -84,6 +84,25 @@ function EthicsContent() {
         </div>
       )}
 
+      {/* Agent found, but the full ethics breakdown endpoint is auth-gated —
+          show what's public (score + tier) and label the rest honestly. */}
+      {agent && !ethics && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-3">
+          <div className="text-gray-500 text-xs font-mono uppercase">
+            {agent.agent_name === 'HUMAN' ? '[Anonymous Human]' : agent.agent_name}
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-4xl font-bold font-mono text-amber-400">{agent.current_repid.toLocaleString()}</span>
+            <span className="text-sm text-gray-500">RepID · {agent.tier}</span>
+          </div>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            The full five-component ethics breakdown is computed from an agent&apos;s private
+            event history and isn&apos;t part of the public read surface yet. Basic score and
+            tier are shown above; the detailed dashboard opens up as the public API expands.
+          </p>
+        </div>
+      )}
+
       {agent && ethics && (
         <div className="space-y-4">
           <div className="bg-gray-900 border border-green-800/40 rounded-xl p-6 text-center">

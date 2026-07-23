@@ -114,11 +114,29 @@ export async function getAgents(limit = 20): Promise<Agent[]> {
   }));
 }
 
+/**
+ * Basic agent score + tier from the PUBLIC /api/v1/repid/:id (accepts a
+ * name, UUID, or address; 404s cleanly for unknown). The old /agents/:id
+ * was auth-gated (401 → "Agent not found" for everyone). The richer
+ * per-agent endpoints (history/badges/ethics/zkp) remain auth-gated and
+ * return empty — the pages degrade gracefully.
+ */
 export async function getAgent(id: string): Promise<Agent | null> {
   try {
-    const res = await fetch(`${ENGINE_URL}/agents/${id}`,
+    const res = await fetch(`${ENGINE_URL}/api/v1/repid/${encodeURIComponent(id)}`,
       { cache: 'no-store' });
-    return res.ok ? res.json() : null;
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (d?.repid_score == null && d?.current_repid == null) return null;
+    return {
+      id: String(d.agent_id ?? id),
+      agent_name: String(d.agent_name ?? id), // preserve what was searched
+      current_repid: Number(d.repid_score ?? d.current_repid ?? 0),
+      tier: (d.tier as Tier) ?? 'PROBATIONARY',
+      activity_30d: Number(d.activity_30d ?? 0),
+      last_updated: String(d.last_updated ?? ''),
+      erc8004_address: String(d.erc8004_address ?? d.erc8004_token_id ?? ''),
+    };
   } catch { return null; }
 }
 
