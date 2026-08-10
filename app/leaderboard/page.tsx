@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { getAgents, TIER_COLORS, DEFAULT_TIER_STYLE, formatRepId } from '@/lib/engine';
 import LiveMetricsBar from '../components/LiveMetricsBar';
+
+export const metadata: Metadata = {
+  title: 'Leaderboard — TrustRepID',
+  description: 'Live agent RepID standings from the public HyperDAG engine — earned, not assigned.',
+};
 
 export const dynamic = 'force-dynamic';
 

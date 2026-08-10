@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getBounties } from '@/lib/engine';
+
+export const metadata: Metadata = {
+  title: 'Contribute — open problems — TrustRepID',
+  description: 'Concrete, well-scoped work that moves the protocol forward. Earn portable RepID and recognition.',
+};
 
 export const dynamic = 'force-dynamic';
 
