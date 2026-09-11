@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { computeMetrics } from '@/lib/metrics';
 
 export const revalidate = 60;
 
@@ -17,22 +18,10 @@ export async function GET() {
       supabase.from('repid_score_events')
         .select('id').eq('hallucination_caught',true)
     ]);
-    const vdr = (agents.data||[])
-      .reduce((s,a) => s + (a.vdr_count||0), 0);
-    const providers = new Set(
-      (decisions.data||[]).map(d => d.llm_provider)
-    ).size;
-    return NextResponse.json({
-      agents: agents.data?.length || 0,
-      vdr,
-      decisions: decisions.data?.length || 0,
-      providers,
-      hallucinations: hallucinations.data?.length || 0
-    });
+    const metrics = computeMetrics(agents, decisions, hallucinations);
+    // A degraded read is not a real read — say so (503), never a fabricated count.
+    return NextResponse.json(metrics, { status: metrics.available ? 200 : 503 });
   } catch {
-    return NextResponse.json({
-      agents:33,vdr:50,decisions:50,
-      providers:2,hallucinations:5
-    });
+    return NextResponse.json({ available: false, error: 'metrics_unavailable' }, { status: 503 });
   }
 }
