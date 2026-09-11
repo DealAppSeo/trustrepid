@@ -140,6 +140,44 @@ export async function getAgent(id: string): Promise<Agent | null> {
   } catch { return null; }
 }
 
+export interface StakeAuthority {
+  builder_id: string;
+  stake_total: string;       // raw 6-decimal units, as the engine returns a string
+  authority: string | null;  // null when withheld (builder floor not passed) — not a zero
+  authority_withheld: boolean;
+  authority_is_binding: boolean;
+  authority_detail?: string;
+  basis: Record<string, unknown>;
+}
+
+/**
+ * A builder's live stake-derived authority ceiling from the PUBLIC, keyless
+ * GET /api/v1/stake/authority/:builder_id. `authority` is null when withheld
+ * (the builder floor was not passed) — render "not shown", never a stand-in
+ * zero, which would be false in the other direction. Degrades to null on
+ * network/parse failure like the other reads here.
+ */
+export async function getStakeAuthority(builderId: string): Promise<StakeAuthority | null> {
+  try {
+    const res = await fetch(
+      `${ENGINE_URL}/api/v1/stake/authority/${encodeURIComponent(builderId)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (d?.builder_id == null) return null;
+    return {
+      builder_id: String(d.builder_id),
+      stake_total: String(d.stake_total ?? '0'),
+      authority: d.authority == null ? null : String(d.authority),
+      authority_withheld: Boolean(d.authority_withheld),
+      authority_is_binding: Boolean(d.authority_is_binding),
+      ...(d.authority_detail ? { authority_detail: String(d.authority_detail) } : {}),
+      basis: (d.basis ?? {}) as Record<string, unknown>,
+    };
+  } catch { return null; }
+}
+
 export async function getAgentHistory(id: string): Promise<RepIdEvent[]> {
   try {
     const res = await fetch(`${ENGINE_URL}/agents/${id}/history`,
