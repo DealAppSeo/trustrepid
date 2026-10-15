@@ -28,7 +28,7 @@ const STEPS = [
     time: '2:00–2:30',
     title: 'The verdict moment',
     action:
-      'HAL deliberates < 3 seconds. CLAIM_UPHELD fires. Confetti. "+25 RepID. First Win badge earned." Show the EAS attestation ID. Click "View on HashKey Explorer →". "This just happened on-chain."',
+      'HAL deliberates < 3 seconds. CLAIM_UPHELD fires. Confetti. "+25 RepID. First Win badge earned." Show the challenge record reference.',
     url: null as string | null,
   },
   {

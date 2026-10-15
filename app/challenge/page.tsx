@@ -52,8 +52,6 @@ const VERDICT_STYLES: Record<
   },
 };
 
-const FULL_CONTRACT = '0xE3b55a00445dEE1e330f81d113da2E4F28131B69';
-
 export default function ChallengePage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [challengerId, setChallengerId] = useState('');
@@ -160,21 +158,8 @@ export default function ChallengePage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Challenge Arena</h1>
           <p className="text-gray-500 text-sm">
-            File a constitutional challenge. HAL audits the claim. RepID updates on-chain
-            instantly.
+            File a constitutional challenge. HAL audits the claim. RepID updates.
           </p>
-          <div className="text-xs text-gray-700 font-mono mt-2 flex items-center gap-2">
-            <span>HashKey Testnet · Chain 133 · Contract</span>
-            <span className="font-mono text-xs text-gray-500">
-              {FULL_CONTRACT.slice(0,6)}...{FULL_CONTRACT.slice(-4)}
-            </span>
-            <button
-              onClick={() => { navigator.clipboard.writeText(FULL_CONTRACT); }}
-              className="text-xs text-gray-600 hover:text-gray-400 font-mono transition-colors"
-              title="Copy full contract address">
-              [copy]
-            </button>
-          </div>
         </div>
 
         {!challengerId && (
@@ -477,19 +462,12 @@ export default function ChallengePage() {
             </div>
 
             <div className="bg-gray-900/50 rounded-lg p-4">
-              <p className="text-xs text-gray-500 font-mono mb-2">ON-CHAIN PROOF</p>
+              <p className="text-xs text-gray-500 font-mono mb-2">CHALLENGE RECORD</p>
               <p className="text-xs text-gray-400 font-mono break-all mb-2">
-                EAS: {result.easAttestationId}
+                Reference: {result.easAttestationId}
               </p>
-              <a
-                href={result.hashkeyExplorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-amber-400 hover:text-amber-300 font-mono">
-                View on HashKey Explorer →
-              </a>
               <p className="text-xs text-gray-600 font-mono mt-1">
-                Schema: {result.easSchema} · Chain: {result.hashkeyChainId}
+                Schema: {result.easSchema} · not anchored on-chain
               </p>
             </div>
 
