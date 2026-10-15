@@ -15,7 +15,9 @@ export default async function DemoPage() {
     { data: stats },
     { data: configs }
   ] = await Promise.all([
-    supabase.from('repid_agents').select('*').order('current_repid', { ascending: false }),
+    // Only the columns rendered below. `*` pulled constitution (credentials) and webhook_secret into
+    // this server render, and fails outright once anon gets a column-level grant on repid_agents.
+    supabase.from('repid_agents').select('id,agent_name,current_repid,tier,erc8004_address').order('current_repid', { ascending: false }),
     supabase.rpc('get_llm_trust_standings'),
     supabase.from('repid_proof_queue').select('status,proof_hash,zkp_service_url').order('created_at', { ascending: false }),
     supabase.from('repid_score_events').select('id,hallucination_caught'),
