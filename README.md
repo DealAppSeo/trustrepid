@@ -23,7 +23,8 @@ A Next.js app (`app/`, `lib/`) plus static demo pages (`public/`). The pages are
 | `/ethics` | Ethics health dashboard. Its data endpoint is auth-gated (`lib/engine.ts`), so it degrades to empty |
 | `/demo` | Status page: engine stats, proof service, on-chain agents, staking contract, LLM trust leaderboard, proof queue |
 | `/install`, `/use-cases`, `/research`, `/bounties`, `/how-to-demo` | Explainer and onboarding pages |
-| `/initiate`, `/pacifica` | Hackathon pitch pages. Marketing copy, see "Known limits" |
+| `/pacifica` | Hackathon pitch page: live HAL counters and one live agent, read from the engine |
+| `/initiate` | Hackathon pitch page. Marketing copy, see "Known limits" |
 | `/api/metrics` | Counts read from Supabase. Returns HTTP 503 if any query fails; it never returns made-up numbers |
 
 RepID has five tiers: PROBATIONARY, EARNING, ESTABLISHED, AUTONOMOUS, VETERAN (`lib/engine.ts`).
@@ -48,7 +49,7 @@ The [builder dashboard](https://trustrepid.dev/builder-dashboard/) page is **not
 - **ERC-7231 minting may be simulated.** The engine mints for real only when a registry is configured; otherwise it records a simulated token id and says `is_simulated`.
 - **Stakes in the demos are simulated**, and rounds resolve against a mock outcome.
 - **Test network only.** On-chain activity referenced by this project is on Base Sepolia.
-- **The hackathon pitch pages (`/initiate`, `/pacifica`) carry earlier marketing copy**, for example a "cannot hallucinate" headline, that this README does not endorse. A copy correction for them is pending.
+- **`/initiate` is a hackathon pitch page and carries earlier marketing copy** (for example unverified EAS / ERC-8004 ValidationRegistry claims) that this README does not endorse. A copy correction for it is pending.
 - **No SDK lives here.** The `@hyperdag/trustshell` npm package is a separate project. This repo does not depend on it.
 
 ## Direction (goals, not shipped)
