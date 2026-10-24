@@ -142,28 +142,16 @@
 
     <!-- LOGIN VIEW ----------------------------------------------------- -->
     <div id="login-view" class="panel">
-      <h2>Sign in or create a builder account</h2>
-      <p style="color: var(--muted); font-size: 12px;">
-        Email + password full-account flow. Mint your ERC-7231 SBT, create
-        agents, link Alpaca paper trading, and let your agents trade under
-        a stake-bounded authority cap.
+      <h2>Sign-up and sign-in are retired</h2>
+      <p style="font-size: 13px;">
+        This page cannot create or open a builder account right now. The engine closed its
+        email + password sign-up and sign-in routes (HTTP 410, <code>password_signup_retired</code>).
       </p>
-      <div class="grid" style="margin-top: 12px;">
-        <div>
-          <h3>Sign in</h3>
-          <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="email" /></div>
-          <div class="field"><label>Password</label><input id="login-password" type="password" autocomplete="current-password" /></div>
-          <button class="primary" onclick="doLogin()">Sign in</button>
-          <div id="login-status" class="status-msg"></div>
-        </div>
-        <div>
-          <h3>New builder</h3>
-          <div class="field"><label>Email</label><input id="signup-email" type="email" autocomplete="email" /></div>
-          <div class="field"><label>Password (≥8 chars)</label><input id="signup-password" type="password" autocomplete="new-password" /></div>
-          <button onclick="doSignup()">Create account</button>
-          <div id="signup-status" class="status-msg"></div>
-        </div>
-      </div>
+      <p style="color: var(--muted); font-size: 12px;">
+        The engine now verifies an email address with a one-time code
+        (<code>POST /api/v1/agent-gate/request-otp</code>, then <code>/verify-otp</code>).
+        This page does not support that flow yet, so there is no sign-in here.
+      </p>
     </div>
 
     <!-- DASHBOARD VIEW ------------------------------------------------- -->
@@ -344,30 +332,6 @@
     }
 
     // --- Auth ---
-    async function doSignup() {
-      setStatus('signup-status', 'creating account…');
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value;
-      const r = await postJson('/api/v1/builder/full-signup', { email, password });
-      if (!r.ok) { setStatus('signup-status', r.json.error || 'signup failed', 'bad'); return; }
-      localStorage.setItem(TOKEN_KEY, r.json.login_token);
-      localStorage.setItem(BUILDER_KEY, r.json.builder_id);
-      setStatus('signup-status', 'account created — loading dashboard', 'ok');
-      enterDashboard();
-    }
-
-    async function doLogin() {
-      setStatus('login-status', 'signing in…');
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
-      const r = await postJson('/api/v1/builder/login', { email, password });
-      if (!r.ok) { setStatus('login-status', r.json.error || 'login failed', 'bad'); return; }
-      localStorage.setItem(TOKEN_KEY, r.json.login_token);
-      localStorage.setItem(BUILDER_KEY, r.json.builder_id);
-      setStatus('login-status', 'signed in', 'ok');
-      enterDashboard();
-    }
-
     function logout() {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(BUILDER_KEY);

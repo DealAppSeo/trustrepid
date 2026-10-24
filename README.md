@@ -41,7 +41,7 @@ All reads go to the RepID engine's public API (`NEXT_PUBLIC_REPID_ENGINE_URL`, d
 | **Two-builder snapshot** | [engine `/api/v1/demo/two-builder/snapshot`](https://repid-engine-production.up.railway.app/api/v1/demo/two-builder/snapshot) | Public JSON for two demo builders (one with stake above the floor, one below). |
 | **Public metrics** | [engine `/api/v1/metrics`](https://repid-engine-production.up.railway.app/api/v1/metrics) | Agent count, decisions, hallucination count and catch rate, and the contract addresses, each with a `measurement` block saying how it was counted. |
 
-The [builder dashboard](https://trustrepid.dev/builder-dashboard/) page is **not currently usable for new accounts**: it posts to the engine's email + password sign-up and login routes, which the engine has retired (HTTP 410, `src/routes/full-account.ts` in the engine). The engine's replacement is a one-time-code flow that this page does not yet use.
+The [builder dashboard](https://trustrepid.dev/builder-dashboard/) page has **no sign-up or sign-in**: the engine retired its email + password routes (HTTP 410, `src/routes/full-account.ts` in the engine), and the page now says so instead of offering forms. The engine's replacement is a one-time-code flow that this page does not use, so the page cannot create or open an account.
 
 ## Known limits
 
